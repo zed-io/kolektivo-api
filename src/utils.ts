@@ -86,7 +86,7 @@ export async function getContractAddresses(): Promise<ContractAddresses> {
   } catch (e) {
     logger.error({
       type: 'ERROR_FETCHING_CONTRACT_ADDRESSES',
-      error: e?.message,
+      error: (e as Error)?.message,
     })
     throw new Error('Unable to fetch contract addresses')
   }
@@ -112,7 +112,7 @@ export async function getContractKit(): Promise<ContractKit> {
   } catch (e) {
     logger.error({
       type: 'GET_CONTRACTKIT_ERROR',
-      error: e?.message,
+      error: (e as Error)?.message,
     })
     throw new Error('Failed to create contractKit instance')
   }

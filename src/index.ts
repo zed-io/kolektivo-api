@@ -6,6 +6,7 @@ import ExchangeRateAPI from './currencyConversion/ExchangeRateAPI'
 import knownAddressesCache from './helpers/KnownAddressesCache'
 import { logger } from './logger'
 import { loadSecret } from '@valora/secrets-loader'
+import { initDatabase } from './database/db'
 import { updatePrices } from './cron'
 
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
@@ -26,6 +27,22 @@ async function main() {
 
   if (!process.env.EXCHANGE_RATES_API_ACCESS_KEY) {
     throw new Error('Missing required EXCHANGE_RATES_API_ACCESS_KEY')
+  }
+
+  if (
+    !process.env.BLOCKCHAIN_DB_HOST ||
+    !process.env.BLOCKCHAIN_DB_DATABASE ||
+    !process.env.BLOCKCHAIN_DB_USER ||
+    !process.env.BLOCKCHAIN_DB_PASS
+  ) {
+    throw new Error("Blockchain database secrets couldn't be obtained")
+  } else {
+    await initDatabase({
+      host: process.env.BLOCKCHAIN_DB_HOST,
+      database: process.env.BLOCKCHAIN_DB_DATABASE,
+      user: process.env.BLOCKCHAIN_DB_USER,
+      password: process.env.BLOCKCHAIN_DB_PASS,
+    })
   }
 
   const app = express()
