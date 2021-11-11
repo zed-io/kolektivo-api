@@ -7,7 +7,7 @@ import knownAddressesCache from './helpers/KnownAddressesCache'
 import { logger } from './logger'
 import { loadSecret } from '@valora/secrets-loader'
 import { initDatabase } from './database/db'
-import { updatePrices } from './cron'
+import { updatePrices } from './prices/PriceUpdater'
 
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
 
@@ -36,14 +36,9 @@ async function main() {
     !process.env.BLOCKCHAIN_DB_PASS
   ) {
     throw new Error("Blockchain database secrets couldn't be obtained")
-  } else {
-    await initDatabase({
-      host: process.env.BLOCKCHAIN_DB_HOST,
-      database: process.env.BLOCKCHAIN_DB_DATABASE,
-      user: process.env.BLOCKCHAIN_DB_USER,
-      password: process.env.BLOCKCHAIN_DB_PASS,
-    })
   }
+
+  const db = await initDatabase()
 
   const app = express()
 
@@ -63,7 +58,7 @@ async function main() {
     }
 
     try {
-      await updatePrices()
+      await updatePrices(db)
       res.status(204).send()
     } catch (error) {
       logger.error(error)
