@@ -1,7 +1,7 @@
 import { updatePrices } from '../../src/prices/PricesUpdater'
 import { initDatabase } from '../../src/database/db'
 import { Knex } from 'knex'
-import { Config } from '@valora/exchanges'
+import { ExchangeRateManager } from '@valora/exchanges'
 import BigNumber from 'bignumber.js'
 
 const mockCalculatePrices = jest.fn()
@@ -9,19 +9,6 @@ const mockCalculatePrices = jest.fn()
 const mockcUSDAddress = 'cUSD'
 const mockDate = 1487076708000
 const tableName = 'historical_token_prices'
-
-jest.mock('@valora/exchanges', () => ({
-  configs: {
-    test: {
-      tokenAddresses: {
-        cUSD: 'cUSD',
-      },
-    },
-  },
-  createNewManager: (config: Config) => ({
-    calculatecUSDPrices: () => mockCalculatePrices(),
-  }),
-}))
 
 describe('PricesUpdater#updatePrices', () => {
   let db: Knex
@@ -37,7 +24,6 @@ describe('PricesUpdater#updatePrices', () => {
     })
 
     dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => mockDate)
-
     db = await initDatabase({ client: 'sqlite3' })
     process.env.EXCHANGES_ENV = 'test'
   })
@@ -49,7 +35,15 @@ describe('PricesUpdater#updatePrices', () => {
   })
 
   it('should store token prices', async () => {
-    await updatePrices(db)
+    const mockExchangeRateManager: ExchangeRateManager = {
+      calculatecUSDPrices: mockCalculatePrices,
+      cUSDTokenAddress: 'cUSD',
+    }
+
+    await updatePrices({
+      db,
+      exchangeRateManager: mockExchangeRateManager,
+    })
 
     expect(await db(tableName)).toHaveLength(3)
 
