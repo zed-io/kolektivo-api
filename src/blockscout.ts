@@ -14,20 +14,22 @@ import {
   TokenReceived,
   TokenSent,
   Verification,
-} from './events'
-import { EscrowContractCall } from './events/EscrowContractCall'
-import { ExchangeContractCall } from './events/ExchangeContractCall'
-import { RegisterAccountDekContractCall } from './events/RegisterAccountDekContractCall'
+} from './legacyEvents'
+import { EscrowContractCall } from './legacyEvents/EscrowContractCall'
+import { ExchangeContractCall } from './legacyEvents/ExchangeContractCall'
+import { RegisterAccountDekContractCall } from './legacyEvents/RegisterAccountDekContractCall'
 import { Input } from './helpers/Input'
 import { InputDecoder } from './helpers/InputDecoder'
 import { logger } from './logger'
 import { metrics } from './metrics'
+
 import { MoneyAmount, TokenTransactionArgs } from './resolvers'
-import { Transaction } from './transaction/Transaction'
-import { TransactionAggregator } from './transaction/TransactionAggregator'
-import { TransactionClassifier } from './transaction/TransactionClassifier'
-import { TransferCollection } from './transaction/TransferCollection'
-import { TransfersNavigator } from './transaction/TransfersNavigator'
+import { LegacyTransaction } from './legacyTransaction/LegacyTransaction'
+import { LegacyTransactionAggregator } from './legacyTransaction/LegacyTransactionAggregator'
+import { LegacyTransactionClassifier } from './legacyTransaction/LegacyTransactionClassifier'
+import { LegacyTransferCollection } from './legacyTransaction/LegacyTransferCollection'
+import { LegacyTransfersNavigator } from './legacyTransaction/LegacyTransfersNavigator'
+
 import { ContractAddresses, getContractAddresses } from './utils'
 export interface BlockscoutTransferTx {
   blockNumber: number
@@ -59,7 +61,7 @@ export class BlockscoutAPI extends RESTDataSource {
     this.baseURL = `${BLOCKSCOUT_API}/graphql`
   }
 
-  async getRawTokenTransactions(address: string): Promise<Transaction[]> {
+  async getRawTokenTransactions(address: string): Promise<LegacyTransaction[]> {
     // Measure time at beginning of execution
     const t0 = performance.now()
     const contractAddresses = await this.ensureContractAddresses()
@@ -109,8 +111,8 @@ export class BlockscoutAPI extends RESTDataSource {
           (edge: any) => edge.node,
         )
 
-        const transferCollection = new TransferCollection(celoTransfers)
-        const transfersNavigator = new TransfersNavigator(
+        const transferCollection = new LegacyTransferCollection(celoTransfers)
+        const transfersNavigator = new LegacyTransfersNavigator(
           contractAddresses,
           FAUCET_ADDRESS,
           transferCollection,
@@ -120,7 +122,7 @@ export class BlockscoutAPI extends RESTDataSource {
           Input.fromString(partialTransferTx.input),
         )
 
-        return new Transaction(
+        return new LegacyTransaction(
           partialTransferTx,
           transfersNavigator,
           inputDecoder,
@@ -197,7 +199,7 @@ export class BlockscoutAPI extends RESTDataSource {
       tokens,
     }
 
-    const transactionClassifier = new TransactionClassifier([
+    const transactionClassifier = new LegacyTransactionClassifier([
       new ExchangeContractCall(context),
       new EscrowContractCall(context),
       new RegisterAccountDekContractCall(context),
@@ -217,7 +219,7 @@ export class BlockscoutAPI extends RESTDataSource {
       transactionClassifier.classify(transaction),
     )
 
-    const aggregatedTransactions = TransactionAggregator.aggregate(
+    const aggregatedTransactions = LegacyTransactionAggregator.aggregate(
       classifiedTransactions,
     )
 
