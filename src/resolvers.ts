@@ -171,6 +171,7 @@ export const resolvers = {
       context: Context,
     ) => {
       const { dataSources } = context
+      context.localCurrencyCode = args.localCurrencyCode
       const transactions =
         await dataSources.blockscoutAPI.getTokenTransactionsV2(args.address)
 
@@ -262,6 +263,36 @@ export const resolvers = {
         case TokenTransactionTypeV2.INVITE_SENT:
         case TokenTransactionTypeV2.PAY_REQUEST:
           return 'TokenTransferV2'
+      }
+    },
+  },
+  TokenAmount: {
+    localAmount: async (
+      tokenAmount: TokenAmount,
+      args: any,
+      context: Context,
+    ) => {
+      const { dataSources, localCurrencyCode } = context
+
+      if (!localCurrencyCode) {
+        return null
+      } else {
+        try {
+          const rate =
+            await dataSources.pricesService.getTokenToLocalCurrencyPrice(
+              tokenAmount.tokenAddress,
+              localCurrencyCode,
+              new Date(tokenAmount.timestamp),
+            )
+          return {
+            value: rate.multipliedBy(tokenAmount.value).toString(),
+            currencyCode: localCurrencyCode,
+            exchangeRate: rate.toString(),
+          }
+        } catch (error) {
+          logger.warn(error, { type: 'ERROR_FETCHING_TOKEN_LOCAL_AMOUNT' })
+          return null
+        }
       }
     },
   },
