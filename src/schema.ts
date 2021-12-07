@@ -134,7 +134,7 @@ export default `type ExchangeRate {
     amount: TokenAmount!
   }
 
-  interface TokenTransferMetadata {
+  type TokenTransferMetadata {
     title: String
     subtitle: String
     image: String
@@ -144,7 +144,7 @@ export default `type ExchangeRate {
   """
   TODO: Add more fields once we understand what useful information we can serve
   """
-  interface TokenExchangeMetadata {
+  type TokenExchangeMetadata {
     title: String
     subtitle: String
   }
@@ -166,6 +166,7 @@ export default `type ExchangeRate {
     transactionHash: String!
     fees: [FeeV2]
     metadata: TokenTransferMetadata
+    account: String!
   }
 
   type TokenExchangeV2 implements TokenTransactionV2 {
@@ -180,7 +181,7 @@ export default `type ExchangeRate {
   }
 
   type TokenTransactionsV2 {
-    tokens: [TokenTransactionV2]!
+    transactions: [TokenTransactionV2]!
   }
 
   type PageInfo {

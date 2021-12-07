@@ -1,10 +1,10 @@
-import { LegacyEventBuilder } from '../helpers/LegacyEventBuilder'
-import { LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
-import { LegacyTransactionType } from '../legacyTransaction/LegacyTransactionType'
+import { EventBuilder } from '../helpers/EventBuilder'
+import { Transaction } from '../transaction/Transaction'
+import { TransactionType } from '../transaction/TransactionType'
 import { Contracts } from '../utils'
 
-export class ExchangeCeloToToken extends LegacyTransactionType {
-  matches(transaction: LegacyTransaction): boolean {
+export class ExchangeCeloToToken extends TransactionType {
+  matches(transaction: Transaction): boolean {
     return (
       transaction.transfers.length === 2 &&
       transaction.transfers.containsTransferTo(Contracts.Reserve) &&
@@ -12,7 +12,7 @@ export class ExchangeCeloToToken extends LegacyTransactionType {
     )
   }
 
-  getEvent(transaction: LegacyTransaction) {
+  async getEvent(transaction: Transaction) {
     const inTransfer = transaction.transfers.getTransferTo(Contracts.Reserve)
     const outTransfer = transaction.transfers.getMintedTokenTransfer()
 
@@ -24,11 +24,10 @@ export class ExchangeCeloToToken extends LegacyTransactionType {
       throw new Error('Minted token transfer not found.')
     }
 
-    return LegacyEventBuilder.exchangeEvent(
+    return await EventBuilder.exchangeEvent(
       transaction,
       inTransfer,
       outTransfer,
-      this.context.tokens,
       transaction.fees,
     )
   }

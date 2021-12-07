@@ -4,33 +4,48 @@ import { BLOCKSCOUT_API, FAUCET_ADDRESS } from './config'
 import { CGLD, CUSD } from './currencyConversion/consts'
 import CurrencyConversionAPI from './currencyConversion/CurrencyConversionAPI'
 import {
-  Any,
-  ContractCall,
-  EscrowReceived,
-  EscrowSent,
-  ExchangeCeloToToken,
-  ExchangeTokenToCelo,
-  Faucet,
-  TokenReceived,
-  TokenSent,
-  Verification,
+  LegacyAny,
+  LegacyContractCall,
+  LegacyEscrowReceived,
+  LegacyEscrowSent,
+  LegacyExchangeCeloToToken,
+  LegacyExchangeTokenToCelo,
+  LegacyFaucet,
+  LegacyTokenReceived,
+  LegacyTokenSent,
+  LegacyVerification,
 } from './legacyEvents'
-import { EscrowContractCall } from './legacyEvents/EscrowContractCall'
-import { ExchangeContractCall } from './legacyEvents/ExchangeContractCall'
-import { RegisterAccountDekContractCall } from './legacyEvents/RegisterAccountDekContractCall'
+import { LegacyEscrowContractCall } from './legacyEvents/LegacyEscrowContractCall'
+import { LegacyExchangeContractCall } from './legacyEvents/LegacyExchangeContractCall'
+import { LegacyRegisterAccountDekContractCall } from './legacyEvents/LegacyRegisterAccountDekContractCall'
 import { Input } from './helpers/Input'
 import { InputDecoder } from './helpers/InputDecoder'
 import { logger } from './logger'
 import { metrics } from './metrics'
-
 import { MoneyAmount, TokenTransactionArgs } from './resolvers'
 import { LegacyTransaction } from './legacyTransaction/LegacyTransaction'
 import { LegacyTransactionAggregator } from './legacyTransaction/LegacyTransactionAggregator'
 import { LegacyTransactionClassifier } from './legacyTransaction/LegacyTransactionClassifier'
 import { LegacyTransferCollection } from './legacyTransaction/LegacyTransferCollection'
 import { LegacyTransfersNavigator } from './legacyTransaction/LegacyTransfersNavigator'
-
 import { ContractAddresses, getContractAddresses } from './utils'
+import { TransferCollection } from './transaction/TransferCollection'
+import { TransfersNavigator } from './transaction/TransfersNavigator'
+import { Transaction } from './transaction/Transaction'
+import { TransactionClassifier } from './transaction/TransactionClassifier'
+import { ExchangeContractCall } from './events/ExchangeContractCall'
+import { EscrowContractCall } from './events/EscrowContractCall'
+import {
+  Any,
+  ContractCall,
+  EscrowReceived,
+  EscrowSent,
+  ExchangeCeloToToken,
+  ExchangeTokenToCelo,
+  TokenReceived,
+  TokenSent,
+} from './events'
+import { TransactionAggregator } from './transaction/TransactionAggregator'
 export interface BlockscoutTransferTx {
   blockNumber: number
   transactionHash: string
@@ -53,12 +68,150 @@ export interface BlockscoutCeloTransfer {
   value: string
 }
 
+export interface BlockscoutTokenTransfer {
+  fromAddressHash: string
+  toAddressHash: string
+  fromAccountHash: string
+  toAccountHash: string
+  token: string
+  tokenAddress: string
+  value: string
+}
+
 export class BlockscoutAPI extends RESTDataSource {
   contractAddresses: ContractAddresses | undefined
 
   constructor() {
     super()
     this.baseURL = `${BLOCKSCOUT_API}/graphql`
+  }
+
+  async getTokenTransactionsV2(address: string) {
+    const userAddress = address.toLowerCase()
+    const rawTransactions = await this.getRawTokenTransactionsV2(userAddress)
+
+    const context = { userAddress }
+
+    const transactionClassifier = new TransactionClassifier([
+      new ExchangeContractCall(context),
+      new EscrowContractCall(context),
+      new ContractCall(context),
+      new EscrowSent(context),
+      new TokenSent(context),
+      new EscrowReceived(context),
+      new TokenReceived(context),
+      new ExchangeCeloToToken(context),
+      new ExchangeTokenToCelo(context),
+      new Any(context),
+    ])
+
+    const classifiedTransactions = rawTransactions.map((transaction) =>
+      transactionClassifier.classify(transaction),
+    )
+
+    const aggregatedTransactions = TransactionAggregator.aggregate(
+      classifiedTransactions,
+    )
+
+    const events: any[] = (
+      await Promise.all(
+        aggregatedTransactions.map(async ({ transaction, type }) => {
+          try {
+            return await type.getEvent(transaction)
+          } catch (e) {
+            logger.error({
+              type: 'ERROR_MAPPING_TO_EVENT_V2',
+              transaction: JSON.stringify(transaction),
+              error: (e as Error)?.message,
+            })
+          }
+        }),
+      )
+    )
+      .filter((e) => e)
+      .sort((a, b) => b.timestamp - a.timestamp)
+
+    logger.info({
+      type: 'GET_TOKEN_TRANSACTIONS_V2',
+      address: address,
+      rawTransactionCount: rawTransactions.length,
+      eventCount: events.length,
+    })
+
+    return events
+  }
+
+  async getRawTokenTransactionsV2(address: string): Promise<Transaction[]> {
+    const t0 = performance.now()
+    const contractAddresses = await this.ensureContractAddresses()
+
+    const response = await this.post('', {
+      query: `
+        query Transfers($address: AddressHash!) {
+          # TXs related to cUSD or cGLD transfers
+          tokenTransferTxs(addressHash: $address, first: 100) {
+            edges {
+              node {
+                transactionHash
+                blockNumber
+                timestamp
+                gasPrice
+                gasUsed
+                feeToken
+                gatewayFee
+                gatewayFeeRecipient
+                input
+                # Transfers associated with the TX
+                tokenTransfer(first: 10) {
+                  edges {
+                    node {
+                      fromAddressHash
+                      toAddressHash
+                      fromAccountHash
+                      toAccountHash
+                      value
+                      tokenAddress
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: { address },
+    })
+
+    const transactions = response.data.tokenTransferTxs.edges.map(
+      ({ node }: any) => {
+        const { tokenTransfer, ...partialTransferTx } = node
+        const tokenTransfers = node.tokenTransfer.edges.map(
+          (edge: any) => edge.node,
+        )
+
+        const transferCollection = new TransferCollection(tokenTransfers)
+        const transfersNavigator = new TransfersNavigator(
+          contractAddresses,
+          FAUCET_ADDRESS,
+          transferCollection,
+        )
+        const inputDecoder = new InputDecoder(
+          contractAddresses,
+          Input.fromString(partialTransferTx.input),
+        )
+
+        return new Transaction(
+          partialTransferTx,
+          transfersNavigator,
+          inputDecoder,
+        )
+      },
+    )
+
+    // Record time at end of execution
+    const t1 = performance.now()
+    metrics.setRawTokenDuration(t1 - t0)
+    return transactions
   }
 
   async getRawTokenTransactions(address: string): Promise<LegacyTransaction[]> {
@@ -200,19 +353,19 @@ export class BlockscoutAPI extends RESTDataSource {
     }
 
     const transactionClassifier = new LegacyTransactionClassifier([
-      new ExchangeContractCall(context),
-      new EscrowContractCall(context),
-      new RegisterAccountDekContractCall(context),
-      new ContractCall(context),
-      new Verification(context),
-      new EscrowSent(context),
-      new TokenSent(context),
-      new Faucet(context),
-      new EscrowReceived(context),
-      new TokenReceived(context),
-      new ExchangeCeloToToken(context),
-      new ExchangeTokenToCelo(context),
-      new Any(context),
+      new LegacyExchangeContractCall(context),
+      new LegacyEscrowContractCall(context),
+      new LegacyRegisterAccountDekContractCall(context),
+      new LegacyContractCall(context),
+      new LegacyVerification(context),
+      new LegacyEscrowSent(context),
+      new LegacyTokenSent(context),
+      new LegacyFaucet(context),
+      new LegacyEscrowReceived(context),
+      new LegacyTokenReceived(context),
+      new LegacyExchangeCeloToToken(context),
+      new LegacyExchangeTokenToCelo(context),
+      new LegacyAny(context),
     ])
 
     const classifiedTransactions = rawTransactions.map((transaction) =>

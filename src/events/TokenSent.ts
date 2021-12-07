@@ -1,17 +1,17 @@
-import { LegacyEventBuilder } from '../helpers/LegacyEventBuilder'
-import { LegacyEventTypes } from '../resolvers'
-import { LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
-import { LegacyTransactionType } from '../legacyTransaction/LegacyTransactionType'
+import { EventBuilder } from '../helpers/EventBuilder'
+import { TokenTransactionTypeV2 } from '../resolvers'
+import { Transaction } from '../transaction/Transaction'
+import { TransactionType } from '../transaction/TransactionType'
 
-export class TokenSent extends LegacyTransactionType {
-  matches(transaction: LegacyTransaction): boolean {
+export class TokenSent extends TransactionType {
+  matches(transaction: Transaction): boolean {
     return (
       transaction.transfers.length === 1 &&
       transaction.transfers.containsTransferFrom(this.context.userAddress)
     )
   }
 
-  getEvent(transaction: LegacyTransaction) {
+  async getEvent(transaction: Transaction) {
     const transfer = transaction.transfers.getTransferFrom(
       this.context.userAddress,
     )
@@ -20,10 +20,10 @@ export class TokenSent extends LegacyTransactionType {
       throw new Error('Transfer from the user not found.')
     }
 
-    return LegacyEventBuilder.transferEvent(
+    return await EventBuilder.transferEvent(
       transaction,
       transfer,
-      LegacyEventTypes.SENT,
+      TokenTransactionTypeV2.SENT,
       transfer.toAddressHash,
       transfer.toAccountHash,
       transaction.fees,

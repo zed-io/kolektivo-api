@@ -3,7 +3,7 @@ import { FeeType } from '../resolvers'
 import { Fee, LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
 import { LegacyTransactionType } from '../legacyTransaction/LegacyTransactionType'
 
-export class RegisterAccountDekContractCall extends LegacyTransactionType {
+export class LegacyRegisterAccountDekContractCall extends LegacyTransactionType {
   matches(transaction: LegacyTransaction): boolean {
     return (
       transaction.transfers.isEmpty() &&
