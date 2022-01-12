@@ -1,10 +1,10 @@
 import { BigNumber } from 'bignumber.js'
-import { BlockscoutTransferTx } from '../blockscout'
+import { Input } from '../helpers/Input'
+import { BlockscoutTokenTransfer, BlockscoutTransferTx } from '../blockscout'
 import { CELO } from '../currencyConversion/consts'
-import { InputDecoder } from '../helpers/InputDecoder'
 import { FeeType } from '../resolvers'
 import { Contracts } from '../utils'
-import { TransfersNavigator } from './TransfersNavigator'
+import { popTransferTo } from './TransfersUtils'
 
 export interface Fee {
   type: FeeType
@@ -29,31 +29,30 @@ export class Transaction {
     return this.input.getTransactionComment()
   }
 
-  get transfers(): TransfersNavigator {
-    return this.transfersNavigator
+  get transfers(): BlockscoutTokenTransfer[] {
+    return this.tokenTransfers
   }
 
   get fees(): Fee[] {
     return this.transactionFees
   }
 
-  get input(): InputDecoder {
-    return this.inputDecoder
+  get input(): Input {
+    return this.txInput
   }
 
   private blockscoutTx: BlockscoutTransferTx
-  private transfersNavigator: TransfersNavigator
+  private tokenTransfers: BlockscoutTokenTransfer[]
   private transactionFees: Fee[] = []
-  private inputDecoder: InputDecoder
+  private txInput: Input
 
   constructor(
     blockscoutTx: BlockscoutTransferTx,
-    transfersNavigator: TransfersNavigator,
-    inputDecoder: InputDecoder,
+    tokenTransfers: BlockscoutTokenTransfer[],
   ) {
     this.blockscoutTx = blockscoutTx
-    this.transfersNavigator = transfersNavigator
-    this.inputDecoder = inputDecoder
+    this.tokenTransfers = tokenTransfers
+    this.txInput = Input.fromString(blockscoutTx.input)
 
     this.extractFees()
   }
@@ -122,8 +121,8 @@ export class Transaction {
     // but their sum also equals to gasPrice * gasUsed
     if (!this.isCeloTransaction()) {
       // transfer to validator should be the last one
-      this.transfersNavigator.popLastTransfer()
-      this.transfersNavigator.popTransferTo(Contracts.Governance)
+      this.tokenTransfers.pop()
+      popTransferTo(this.tokenTransfers, Contracts.Governance)
     }
 
     this.transactionFees.push({
@@ -143,9 +142,7 @@ export class Transaction {
     // but it's value is also recorded in gatewayFee
     if (!this.isCeloTransaction()) {
       // it's the last transfer on the list
-      this.transfersNavigator.popTransferTo(
-        this.blockscoutTx.gatewayFeeRecipient,
-      )
+      popTransferTo(this.tokenTransfers, this.blockscoutTx.gatewayFeeRecipient)
     }
 
     this.transactionFees.push({

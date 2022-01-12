@@ -57,6 +57,14 @@ export interface ContractAddresses {
 
 let contractAddresses: ContractAddresses
 
+export function getContractAddressesOrError(): ContractAddresses {
+  if (!contractAddresses) {
+    throw new Error('Contract Addresses is not available')
+  }
+
+  return contractAddresses
+}
+
 export async function getContractAddresses(): Promise<ContractAddresses> {
   if (contractAddresses) {
     return contractAddresses
