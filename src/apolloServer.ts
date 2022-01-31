@@ -33,9 +33,9 @@ export function initApolloServer({
       }
     },
     formatError: (error) => {
-      logger.error(error, {
+      logger.error({
         type: 'UNHANDLED_ERROR',
-        error: error?.message,
+        error: error,
       })
       return error
     },

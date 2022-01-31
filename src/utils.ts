@@ -111,10 +111,10 @@ export async function getContractAddresses(): Promise<ContractAddresses> {
       ...contractAddresses,
     })
     return contractAddresses
-  } catch (e) {
+  } catch (error) {
     logger.error({
       type: 'ERROR_FETCHING_CONTRACT_ADDRESSES',
-      error: (e as Error)?.message,
+      error,
     })
     throw new Error('Unable to fetch contract addresses')
   }
@@ -137,10 +137,10 @@ export async function getContractKit(): Promise<ContractKit> {
         'Missing web3 provider URL, will not be able to fetch contract addresses.',
       )
     }
-  } catch (e) {
+  } catch (error) {
     logger.error({
       type: 'GET_CONTRACTKIT_ERROR',
-      error: (e as Error)?.message,
+      error,
     })
     throw new Error('Failed to create contractKit instance')
   }

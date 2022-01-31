@@ -115,7 +115,10 @@ async function main() {
       await updatePrices({ db, exchangeRateManager })
       res.status(204).send()
     } catch (error) {
-      logger.error(error)
+      logger.error({
+        type: 'ERROR_UPDATING_PRICES',
+        error,
+      })
       res.status(500).send()
     }
   })
@@ -151,10 +154,10 @@ async function main() {
   })
 }
 
-main().catch((err) => {
+main().catch((error) => {
   logger.error({
     type: 'STARTUP',
-    error: err.message,
+    error,
   })
   process.exit(1)
 })
