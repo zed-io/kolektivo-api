@@ -8,11 +8,11 @@ async function checkAndMigrate(db: Knex) {
       directory: './dist/database/migrations',
       loadExtensions: ['.js'],
     })
-  } catch(error) {
+  } catch (error) {
     logger.error(`Migration failed: ${(error as Error)?.message}`)
     throw error
   }
-  
+
   logger.info('Database initialized successfully')
 }
 
