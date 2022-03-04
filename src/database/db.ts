@@ -3,12 +3,16 @@ import { logger } from '../logger'
 
 async function checkAndMigrate(db: Knex) {
   logger.info('Running migrations')
-
-  await db.migrate.latest({
-    directory: './dist/database/migrations',
-    loadExtensions: ['.js'],
-  })
-
+  try {
+    await db.migrate.latest({
+      directory: './dist/database/migrations',
+      loadExtensions: ['.js'],
+    })
+  } catch(error) {
+    logger.error(`Migration failed: ${(error as Error)?.message}`)
+    throw error
+  }
+  
   logger.info('Database initialized successfully')
 }
 
