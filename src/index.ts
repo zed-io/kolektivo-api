@@ -141,6 +141,7 @@ async function main() {
 main().catch((error) => {
   logger.error({
     type: 'STARTUP',
+    msg: error?.message,
     error,
   })
   process.exit(1)
