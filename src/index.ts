@@ -7,6 +7,7 @@ import express from 'express'
 import promBundle from 'express-prom-bundle'
 import yargs from 'yargs'
 import { initApolloServer } from './apolloServer'
+import { cronRouter } from './crons'
 import CurrencyConversionAPI from './currencyConversion/CurrencyConversionAPI'
 import ExchangeRateAPI from './currencyConversion/ExchangeRateAPI'
 import { initDatabase } from './database/db'
@@ -14,7 +15,6 @@ import knownAddressesCache from './helpers/KnownAddressesCache'
 import tokenInfoCache from './helpers/TokenInfoCache'
 import { logger } from './logger'
 import PricesService from './prices/PricesService'
-import { updatePrices } from './prices/PricesUpdater'
 
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
 
@@ -94,41 +94,6 @@ async function main() {
   const exchangeRateConfig = exchangesConfigs[args['exchanges-network-config']]
   const exchangeRateManager = createNewManager(exchangeRateConfig)
 
-  const app = express()
-
-  app.use(metricsMiddleware)
-
-  app.get('/robots.txt', (_req, res) => {
-    res.type('text/plain')
-    res.send('User-agent: *\nDisallow: /')
-  })
-
-  app.get('/cron/update-prices', async (req, res) => {
-    // App Engine sets this header if and only if the request is from a cron.
-    if (!req.headers['x-appengine-cron']) {
-      logger.warn('Request does not contain header x-appengine-cron')
-      res.status(401).send()
-      return
-    }
-
-    try {
-      await updatePrices({ db, exchangeRateManager })
-      res.status(204).send()
-    } catch (error) {
-      logger.error({
-        type: 'ERROR_UPDATING_PRICES',
-        error,
-      })
-      res.status(500).send()
-    }
-  })
-
-  app.head('/', (_req, res) => {
-    // Preventing HEAD requests made by some browsers causing alerts
-    // https://github.com/celo-org/celo-monorepo/issues/2189
-    res.end()
-  })
-
   knownAddressesCache.startListening()
   tokenInfoCache.startListening()
 
@@ -141,6 +106,25 @@ async function main() {
     exchangeRateAPI,
     exchangeRateManager.cUSDTokenAddress,
   )
+
+  const app = express()
+
+  app.use(metricsMiddleware)
+
+  // What is this? lol
+  app.get('/robots.txt', (_req, res) => {
+    res.type('text/plain')
+    res.send('User-agent: *\nDisallow: /')
+  })
+
+  app.head('/', (_req, res) => {
+    // Preventing HEAD requests made by some browsers causing alerts
+    // https://github.com/celo-org/celo-monorepo/issues/2189
+    res.end()
+  })
+
+  app.use('/cron', cronRouter({ db, pricesService, exchangeRateManager }))
+
   const apolloServer = initApolloServer({
     currencyConversionAPI,
     pricesService,
