@@ -44,6 +44,7 @@ async function main() {
   let now = Date.now()
   const end = now + 10 * 1000
   while (true) {
+    console.log(`DIEGO ATTEMPT AT ${now}`)
     try {
       const result = await axios({
         method: 'GET',
