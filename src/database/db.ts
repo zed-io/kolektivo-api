@@ -11,7 +11,7 @@ async function checkAndMigrate(db: Knex) {
   } catch (error) {
     logger.error({
       type: 'MIGRATION_FAILED',
-      error
+      error,
     })
     throw error
   }
