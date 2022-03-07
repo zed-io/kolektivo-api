@@ -41,9 +41,9 @@ async function main() {
   })
 
   // Ensure server starts.
-  const MAX_ATTEMPTS = 10
+  const TIME_RETYING = 10 * 1000
   let now = Date.now()
-  const end = now + MAX_ATTEMPTS * 1000
+  const end = now + TIME_RETYING
 
   while (true) {
     try {

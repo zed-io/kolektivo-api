@@ -14,6 +14,7 @@ async function checkAndMigrate(db: Knex) {
       msg: error.message,
       error,
     })
+    logger.error(error.message)
     throw error
   }
 
