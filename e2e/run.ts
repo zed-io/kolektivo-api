@@ -46,17 +46,11 @@ async function main() {
   const MAX_ATTEMPTS = 20
   let now = Date.now()
   const end = now + MAX_ATTEMPTS * 1000
+
   while (true) {
     console.info(`DIEGO ATTEMPT AT ${now}`)
     try {
-      const result = await axios({
-        method: 'GET',
-        url: '/.well-known/apollo/server-health',
-        baseURL: 'http://localhost:8080',
-      })
-      if (result.status !== 200) {
-        throw new Error(`Unexpected status: ${result.status}`)
-      }
+      await checkServerStatus()
       break
     } catch (error) {
       now = Date.now()
@@ -71,6 +65,17 @@ async function main() {
 
   // NOTE: if we add more tests we might need to set a valid
   // EXCHANGE_RATES_API_ACCESS_KEY above.
+}
+
+async function checkServerStatus() {
+  const result = await axios({
+    method: 'GET',
+    url: '/.well-known/apollo/server-health',
+    baseURL: 'http://localhost:8080',
+  })
+  if (result.status !== 200) {
+    throw new Error(`Unexpected status: ${result.status}`)
+  }
 }
 
 function setUpDatabase() {
