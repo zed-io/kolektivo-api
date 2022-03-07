@@ -41,7 +41,7 @@ async function main() {
   })
 
   // Ensure server starts.
-  const MAX_ATTEMPTS = 5
+  const MAX_ATTEMPTS = 10
   let now = Date.now()
   const end = now + MAX_ATTEMPTS * 1000
 
