@@ -35,16 +35,19 @@ async function main() {
     },
   })
 
+  subprocess.addListener
+
   process.on('exit', () => {
     cleanDatabase()
     subprocess.kill()
   })
 
   // Ensure server starts.
+  const MAX_ATTEMPTS = 20
   let now = Date.now()
-  const end = now + 10 * 1000
+  const end = now + MAX_ATTEMPTS * 1000
   while (true) {
-    console.log(`DIEGO ATTEMPT AT ${now}`)
+    console.info(`DIEGO ATTEMPT AT ${now}`)
     try {
       const result = await axios({
         method: 'GET',
