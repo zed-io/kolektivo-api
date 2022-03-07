@@ -35,20 +35,17 @@ async function main() {
     },
   })
 
-  subprocess.addListener
-
   process.on('exit', () => {
     cleanDatabase()
     subprocess.kill()
   })
 
   // Ensure server starts.
-  const MAX_ATTEMPTS = 20
+  const MAX_ATTEMPTS = 5
   let now = Date.now()
   const end = now + MAX_ATTEMPTS * 1000
 
   while (true) {
-    console.info(`DIEGO ATTEMPT AT ${now}`)
     try {
       await checkServerStatus()
       break
