@@ -12,21 +12,53 @@ interface TokenAddresses {
   CELO: string
 }
 
+async function firebaseReady() {
+  // If we don't have a RTDB handle, assume Firebase will never be ready.
+  if (!database) {
+    logger.info('No Firebase RTDB handle')
+    return false
+  }
+
+  const timeoutSeconds = 5
+  const end = Date.now() + timeoutSeconds * 1000
+  while (true) {
+    const connected = (
+      await database.ref('.info/connected').once('value')
+    ).val()
+    if (connected) {
+      break
+    }
+    const now = Date.now()
+    if (end < now) {
+      // Assume we'll never connect and Firebase will never be ready.
+      logger.info('Firebase RTDB timed out')
+      return false
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+  }
+
+  const tokensInfoExists = !!(
+    await database.ref(`tokensInfo`).once('value')
+  ).val()
+  if (!tokensInfoExists) {
+    // Assume we should skip if we're missing expected values.
+    logger.info('Firebase RTDB does not have expected tokensInfo')
+    return false
+  }
+
+  return true
+}
+
 // Once the migration is done in alfajores and mainnet, we could remove this file or at least silent its errors
 export async function up(knex: Knex): Promise<void> {
-  try {
-    await historicalPricesMigration(knex)
-    logger.info('Historical prices migrated')
-  } catch (e) {
-    logger.warn('Error while migrating historical prices', (e as Error).message)
-    // Skip e2e and local since maybe we don't have a firebase connection.
-    if (
-      process.env.DEPLOY_ENV !== 'e2e' &&
-      process.env.DEPLOY_ENV !== 'local'
-    ) {
-      throw e
-    }
+  if (!(await firebaseReady())) {
+    logger.info('Skip migrating historical prices from Firebase RTDB')
+    return
   }
+
+  await historicalPricesMigration(knex)
+  logger.info('Historical prices migrated')
 }
 
 export async function down(knex: Knex): Promise<void> {
