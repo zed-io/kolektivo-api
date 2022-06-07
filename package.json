@@ -50,7 +50,7 @@
     "utf8": "^3.0.0",
     "web3": "1.6.1",
     "web3-eth-abi": "1.6.1",
-    "yargs": "^17.3.1"
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@google-cloud/nodejs-repo-tools": "^3.3.0",
@@ -65,7 +65,7 @@
     "@valora/prettier-config": "^0.0.1",
     "axios": "^0.24.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^26.1.1",
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
