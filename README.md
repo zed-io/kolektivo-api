@@ -2,6 +2,20 @@
 
 ## Setup
 
+You should only use this method if your `yarn install` fails to issues related to `sqlite3` and `python` via the underlying `node-gyp` build tool. If you are using Mac M1 and have Python3 installed by default, the SQLite3 dependency may fail to install. Ensure that `npm` uses python3 by doing the following.
+
+```sh
+export npm_config_python=$(where python3)
+```
+
+And verify by running `npm config list`, running this command should show output resembling the following, using the path for where python3 is installed on your machine.
+
+```sh
+; "env" config from environment
+
+python = "/usr/bin/python3" 
+```
+
 Install dependencies:
 
 ```
