@@ -18,12 +18,13 @@ python = "/usr/bin/python3"
 
 Install dependencies:
 
-```
+```sh
 yarn
 ```
 
 Build (must run first or tests will not pass!):
-```
+
+```sh
 yarn build
 ```
 
@@ -31,13 +32,13 @@ yarn build
 
 Unit tests, linting, and formatting:
 
-```
+```sh
 yarn test
 ```
 
 End-to-end tests:
 
-```
+```sh
 yarn e2e
 ```
 
@@ -49,21 +50,21 @@ file.
 
 For the emulator:
 
-```
+```sh
 # Check if there are any values you need to complete
 cp emuluator.env .env
 ```
 
 or for the account:
 
-```
+```sh
 # Check if there are any values you need to complete
 cp example.env .env
 ```
 
 After completing your `.env`, build and start:
 
-```
+```sh
 yarn start:dev  # Uses tsc-watch to watch the folder and rebuild as needed
 ```
 
@@ -88,7 +89,7 @@ If you want to take a look at postgres db, access to the container with the comm
 
 Start the emulator before running blockchain-api:
 
-```
+```sh
 yarn firebase:emulate
 ```
 
@@ -109,7 +110,6 @@ You also need a service account for the Firebase connection. You can create one 
 
 ## Deploying to App Engine
 
-```
+```sh
 ./deploy.sh -n {alfajores,mainnet}
 ```
-
