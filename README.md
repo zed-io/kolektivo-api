@@ -2,14 +2,29 @@
 
 ## Setup
 
+You should only use this method if your `yarn install` fails to issues related to `sqlite3` and `python` via the underlying `node-gyp` build tool. If you are using Mac M1 and have Python3 installed by default, the SQLite3 dependency may fail to install. Ensure that `npm` uses python3 by doing the following.
+
+```sh
+export npm_config_python=$(where python3)
+```
+
+And verify by running `npm config list`, running this command should show output resembling the following, using the path for where python3 is installed on your machine.
+
+```sh
+; "env" config from environment
+
+python = "/usr/bin/python3" 
+```
+
 Install dependencies:
 
-```
+```sh
 yarn
 ```
 
 Build (must run first or tests will not pass!):
-```
+
+```sh
 yarn build
 ```
 
@@ -17,13 +32,13 @@ yarn build
 
 Unit tests, linting, and formatting:
 
-```
+```sh
 yarn test
 ```
 
 End-to-end tests:
 
-```
+```sh
 yarn e2e
 ```
 
@@ -35,21 +50,21 @@ file.
 
 For the emulator:
 
-```
+```sh
 # Check if there are any values you need to complete
 cp emuluator.env .env
 ```
 
 or for the account:
 
-```
+```sh
 # Check if there are any values you need to complete
 cp example.env .env
 ```
 
 After completing your `.env`, build and start:
 
-```
+```sh
 yarn start:dev  # Uses tsc-watch to watch the folder and rebuild as needed
 ```
 
@@ -74,7 +89,7 @@ If you want to take a look at postgres db, access to the container with the comm
 
 Start the emulator before running blockchain-api:
 
-```
+```sh
 yarn firebase:emulate
 ```
 
@@ -95,7 +110,6 @@ You also need a service account for the Firebase connection. You can create one 
 
 ## Deploying to App Engine
 
-```
+```sh
 ./deploy.sh -n {alfajores,mainnet}
 ```
-

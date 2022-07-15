@@ -70,7 +70,7 @@ export default class ExchangeRateAPI extends RESTDataSource {
     const pair = `${sourceCurrencyCode}/${currencyCode}`
     const path = `/historical`
     const params = {
-      access_key: this.exchangeRatesAPIAccessKey,
+      apikey: this.exchangeRatesAPIAccessKey,
       date: formatDateString(date),
       source: sourceCurrencyCode,
     }
