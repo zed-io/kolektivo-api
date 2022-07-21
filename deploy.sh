@@ -17,7 +17,10 @@ done
 
 [ -z "$NETWORK" ] && echo "Need to set the NETWORK via the -n flag" && exit 1;
 
-PROJECT="celo-mobile-${NETWORK}"
+# If NETWORK=mainnet, exit;
+[ $NETWORK == "mainnet" ] && exit 0;
+
+PROJECT="kolektivo-backend"
 
 echo "Starting blockchain api deployment."
 
@@ -27,6 +30,6 @@ gcloud --project ${PROJECT} app deploy -q cron.yaml
 
 echo 'Hitting service url to trigger update'
 # This seems to be necessary to ensure get App Engine starts the service
-curl "https://blockchain-api-dot-${PROJECT}.appspot.com" > /dev/null 2>&1
+curl "https://${NETWORK}-blockchain-api.kolektivo-backend.uc.r.appspot.com" > /dev/null 2>&1
 
 echo "Done deployment."
