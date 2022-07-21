@@ -21,7 +21,9 @@
     "build": "tsc -p .",
     "clean": "rm -rf dist coverage",
     "gcp-build": "npm run build",
-    "deploy": "./deploy.sh"
+    "deploy": "./deploy.sh",
+    "reset": "yarn reset-modules",
+    "reset-modules": "rm -rf node_modules"
   },
   "prettier": "@valora/prettier-config",
   "dependencies": {
