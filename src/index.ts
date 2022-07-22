@@ -55,6 +55,12 @@ async function parseArgs() {
       type: 'string',
       demandOption: true,
     })
+    .option('blockchain-db-port', {
+      group: 'Blockchain DB:',
+      description: 'Blockchain DB host port',
+      type: 'number',
+      default: 5432,
+    })
     .option('blockchain-db-database', {
       group: 'Blockchain DB:',
       description: 'Blockchain DB database',
@@ -116,6 +122,7 @@ async function main() {
     client: 'pg',
     connection: {
       host: args['blockchain-db-host'],
+      port: args['blockchain-db-port'],
       database: args['blockchain-db-database'],
       user: args['blockchain-db-user'],
       password: args['blockchain-db-pass'],
