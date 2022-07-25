@@ -121,7 +121,7 @@ async function main() {
   const db = await initDatabase({
     client: 'pg',
     connection: {
-      host: args['blockchain-db-host'],
+      host: `/cloudsql/${args['blockchain-db-host']}`,
       port: args['blockchain-db-port'],
       database: args['blockchain-db-database'],
       user: args['blockchain-db-user'],

@@ -1,5 +1,5 @@
 runtime: nodejs16
-service: alfajores-blockchain-api
+service: alfajores
 instance_class: F1
 beta_settings:
   cloud_sql_instances: kolektivo-backend:us-central1:alfajores=tcp:5432
