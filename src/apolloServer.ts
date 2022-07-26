@@ -24,6 +24,7 @@ export function initApolloServer({
   return new ApolloServer({
     typeDefs,
     resolvers,
+    introspection: true,
     dataSources: () => {
       return {
         blockscoutAPI: new BlockscoutAPI(),
