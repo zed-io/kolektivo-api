@@ -1,15 +1,17 @@
 runtime: nodejs16
-service: blockchain-api
+instance_class: F1
+beta_settings:
+  cloud_sql_instances: kolektivo-backend:us-central1:alfajores=tcp:5432
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'alfajores'
-  EXCHANGE_RATES_API: 'https://apilayer.net/api'
+  EXCHANGE_RATES_API: 'https://api.apilayer.com/currency_data'
   BLOCKSCOUT_API: 'https://alfajores-blockscout.celo-testnet.org'
-  FIREBASE_PROJECT_ID: 'celo-mobile-alfajores'
+  FIREBASE_PROJECT_ID: 'kolektivo-backend-default-rtdb'
   # TODO Pull addresses from the build artifacts of the network in protocol/build
   FAUCET_ADDRESS: '0x456f41406B32c45D59E539e4BBA3D7898c3584dA'
   VERIFICATION_REWARDS_ADDRESS: '0xb4fdaf5f3cd313654aa357299ada901b1d2dd3b5'
   WEB3_PROVIDER_URL: 'https://alfajores-forno.celo-testnet.org'
   # Comma separated list of Secrets to load.
-  SECRET_NAMES: 'projects/1067724576910/secrets/blockchain-api/versions/latest,projects/1067724576910/secrets/blockchain-api-db/versions/latest'
+  SECRET_NAMES: 'projects/537878594312/secrets/alfajores-api/versions/latest,projects/537878594312/secrets/alfajores-blockchain-psql/versions/latest'
   EXCHANGES_NETWORK_CONFIG: 'alfajores'

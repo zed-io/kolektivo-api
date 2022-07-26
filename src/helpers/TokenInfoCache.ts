@@ -1,4 +1,3 @@
-import { logger } from '../logger'
 import { listenFromFirebase } from './FirebaseListener'
 
 const ROOT_KEY = 'tokensInfo'
@@ -22,7 +21,6 @@ class TokenInfoCache {
   private tokensInfo: TokensInfo = {}
 
   startListening(): void {
-    logger.info({ type: 'START_FETCHING_TOKENS_INFO' })
     listenFromFirebase(ROOT_KEY, (value: TokensInfo) => {
       this.tokensInfo = value ?? this.tokensInfo
     })
