@@ -16,3 +16,9 @@ export abstract class TransactionType {
   abstract getEvent(transaction: Transaction): Promise<any>
   abstract isAggregatable(): boolean
 }
+
+export const isTransactionType = (
+  transaction: TransactionType | undefined,
+): transaction is TransactionType => {
+  return !!transaction
+}
