@@ -9,7 +9,7 @@ _An explanation of how the changes were tested or an explanation as to why they 
 
 ### Backwards compatibility
 
-_Has this change been tested against the most recent publically released app? Brief explanation of why these changes are/are not backwards compatible._
+_Has this change been tested against the most recent publicly released app? Brief explanation of why these changes are/are not backwards compatible._
 
 ### Related issues
 

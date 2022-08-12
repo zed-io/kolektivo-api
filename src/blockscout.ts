@@ -96,8 +96,8 @@ export interface BlockscoutTokenTransfer {
   tokenType: string
 }
 
-const MAX_RESULTS_PER_QUERY = 10
-const MAX_TRANSFERS_PER_TRANSACTIONS = 100
+const MAX_RESULTS_PER_QUERY = 25
+const MAX_TRANSFERS_PER_TRANSACTIONS = 40
 
 const BLOCKSCOUT_QUERY = `
 query Transfers($address: AddressHash!, $afterCursor: String) {
