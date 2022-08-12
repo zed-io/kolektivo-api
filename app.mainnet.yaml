@@ -6,6 +6,7 @@ beta_settings:
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'mainnet'
+  COINGECKO_API: 'https://api.coingecko.com/api/v3'
   EXCHANGE_RATES_API: 'https://apilayer.net/api'
   BLOCKSCOUT_API: 'https://rc1-blockscout.celo-testnet.org'
   FIREBASE_PROJECT_ID: 'celo-mobile-mainnet'

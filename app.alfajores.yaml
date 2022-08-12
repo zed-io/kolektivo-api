@@ -5,6 +5,7 @@ beta_settings:
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'alfajores'
+  COINGECKO_API: 'https://api.coingecko.com/api/v3'
   EXCHANGE_RATES_API: 'https://api.apilayer.com/currency_data'
   BLOCKSCOUT_API: 'https://alfajores-blockscout.celo-testnet.org'
   FIREBASE_PROJECT_ID: 'kolektivo-backend-default-rtdb'
