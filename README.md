@@ -4,13 +4,13 @@
 
 Install dependencies:
 
-```
+```console
 yarn
 ```
 
 Build (must run first or tests will not pass!):
 
-```
+```console
 yarn build
 ```
 
@@ -18,13 +18,13 @@ yarn build
 
 Unit tests, linting, and formatting:
 
-```
+```console
 yarn test
 ```
 
 End-to-end tests:
 
-```
+```console
 yarn e2e
 ```
 
@@ -36,21 +36,32 @@ file.
 
 For the emulator:
 
-```
+```console
 # Check if there are any values you need to complete
 cp emulator.env .env
 ```
 
 or for the account:
 
-```
+```console
 # Check if there are any values you need to complete
 cp example.env .env
 ```
 
-After completing your `.env`, build and start:
+We use Docker for the postgres database, steps to set this up are in the
+[relevant section](#docker-compose). A few more environment variables are needed to reference this local database, for example
 
+```console
+BLOCKCHAIN_DB_HOST=localhost
+BLOCKCHAIN_DB_DATABASE=postgres # depending on what is inside the docker container
+BLOCKCHAIN_DB_USER=postgres
+BLOCKCHAIN_DB_PASS=pass # declared in the docker-compose.yml
 ```
+
+After completing your `.env` and starting the database, we can finally start the
+blockchain-api:
+
+```console
 yarn start:dev  # Uses tsc-watch to watch the folder and rebuild as needed
 ```
 
@@ -75,7 +86,7 @@ If you want to take a look at postgres db, access to the container with the comm
 
 Start the emulator before running blockchain-api:
 
-```
+```console
 yarn firebase:emulate
 ```
 
@@ -94,8 +105,7 @@ You also need a service account for the Firebase connection. You can create one 
 - `Add key` -> `Create new key` -> `JSON` -> `Create`
 - You will be prompted to download the service account key. Rename it to `serviceAccountKey.json` and put it in the root of the repo.
 
-## Deploying to App Engine
+## Deployments
 
-```
-./deploy.sh -n {alfajores,mainnet}
-```
+Changes that are merged to the main branch are automatically deployed to
+Alfajores and Mainnet.
