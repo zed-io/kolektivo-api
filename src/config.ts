@@ -44,3 +44,4 @@ export const FAUCET_ADDRESS = (
   process.env.FAUCET_ADDRESS as string
 ).toLowerCase()
 export const WEB3_PROVIDER_URL = process.env.WEB3_PROVIDER_URL
+export const COINGECKO_API = (process.env.COINGECKO_API as string).toLowerCase()

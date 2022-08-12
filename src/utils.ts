@@ -31,6 +31,11 @@ export function formatDateString(date: Date) {
   return date.toISOString().split('T')[0]
 }
 
+// Returns date string in dd-mm-yyyy
+export function formatDateStringShort(date: Date) {
+  return date.toISOString().split('T')[0].split('-').reverse().join('-')
+}
+
 export enum Contracts {
   Attestations = 'Attestations',
   Escrow = 'Escrow',
