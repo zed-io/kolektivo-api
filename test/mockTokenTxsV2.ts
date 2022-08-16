@@ -1063,6 +1063,68 @@ const mockTokenTxs = {
               '0xc3a66297e26a7074ab0367dafd30d56a9589de37ec5d2f161d0a77dda05595ad',
           },
         },
+        {
+          node: {
+            blockNumber: 14483843,
+            feeToken: 'CELO',
+            gasPrice: '500000000',
+            gasUsed: '219338',
+            gatewayFee: '0',
+            gatewayFeeRecipient: null,
+            input:
+              '0x5c11d7950000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000003ef9510fb1f1900000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000849fa48c8caa2907032f45765d7d6f52da13598d0000000000000000000000000000000000000000000000000000000062f2efaf0000000000000000000000000000000000000000000000000000000000000003000000000000000000000000218c3c3d49d0e7b37aff0d8bb079de36ae61a4c0000000000000000000000000918146359264c492bd6934071c6bd31c854edbc3000000000000000000000000a649325aa7c5093d12d6f98eb4378deae68ce23f',
+            timestamp: '2022-08-09T23:17:39.000000Z',
+            tokenTransfer: {
+              edges: [
+                {
+                  node: {
+                    fromAccountHash:
+                      '0x0000000000000000000000000000000000007E57',
+                    fromAddressHash:
+                      '0x0000000000000000000000000000000000007E57',
+                    id: 'Q2Vsb1RyYW5zZmVyOnsibG9nX2luZGV4IjozLCJ0cmFuc2FjdGlvbl9oYXNoIjoiMHg1MTIyYThhZDFhZTQ4ZjUwYWM4ODZiNzM2YTAxMjg3YTE2NjkzNDhiNDBjYmNkNWIxOWE5OGQzYTIzODA0OGY1In0=',
+                    toAccountHash: null,
+                    toAddressHash: '0x11a0dce6931528fa45e5e34d79c2761cc8b96169',
+                    token: 'cUSD',
+                    tokenAddress: TEST_DOLLAR_ADDRESS,
+                    tokenType: 'ERC-20',
+                    value: '1000000000000000000',
+                  },
+                },
+                {
+                  node: {
+                    fromAccountHash: null,
+                    fromAddressHash:
+                      '0x11a0dce6931528fa45e5e34d79c2761cc8b96169',
+                    id: 'Q2Vsb1RyYW5zZmVyOnsibG9nX2luZGV4Ijo1LCJ0cmFuc2FjdGlvbl9oYXNoIjoiMHg1MTIyYThhZDFhZTQ4ZjUwYWM4ODZiNzM2YTAxMjg3YTE2NjkzNDhiNDBjYmNkNWIxOWE5OGQzYTIzODA0OGY1In0=',
+                    toAccountHash: null,
+                    toAddressHash: '0x30f1639b42e5f14c176e47d07199f001f122238c',
+                    token: 'cUSD',
+                    tokenAddress: TEST_DOLLAR_ADDRESS,
+                    tokenType: 'ERC-20',
+                    value: '359397031406544889',
+                  },
+                },
+                {
+                  node: {
+                    fromAccountHash: null,
+                    fromAddressHash:
+                      '0x30f1639b42e5f14c176e47d07199f001f122238c',
+                    id: 'Q2Vsb1RyYW5zZmVyOnsibG9nX2luZGV4Ijo4LCJ0cmFuc2FjdGlvbl9oYXNoIjoiMHg1MTIyYThhZDFhZTQ4ZjUwYWM4ODZiNzM2YTAxMjg3YTE2NjkzNDhiNDBjYmNkNWIxOWE5OGQzYTIzODA0OGY1In0=',
+                    toAccountHash: '0x0000000000000000000000000000000000007E57',
+                    toAddressHash: '0x0000000000000000000000000000000000007E57',
+                    token: 'cGOLD',
+                    tokenAddress: TEST_GOLD_ADDRESS,
+                    tokenType: 'ERC-20',
+                    value: '1123912565750304',
+                  },
+                },
+              ],
+            },
+            transactionHash:
+              '0x5122a8ad1ae48f50ac886b736a01287a1669348b40cbcd5b19a98d3a238048f5',
+          },
+        },
       ],
     },
   },

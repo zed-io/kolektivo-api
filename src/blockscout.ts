@@ -17,6 +17,7 @@ import { EscrowContractCall } from './events/EscrowContractCall'
 import { ExchangeContractCall } from './events/ExchangeContractCall'
 import { NftReceived } from './events/NftReceived'
 import { NftSent } from './events/NftSent'
+import { SwapTransaction } from './events/SwapTransaction'
 import { Input } from './helpers/Input'
 import { InputDecoderLegacy } from './helpers/InputDecoderLegacy'
 import tokenInfoCache from './helpers/TokenInfoCache'
@@ -157,11 +158,17 @@ export class BlockscoutAPI extends RESTDataSource {
     // You should do version check to take care of backward compatibility with wallet client.
 
     let shouldIncludeNftTransactions = false
+    let shouldIncludeSwapTransactions = false
     if (userAddress != null) {
       const userInfo = await fetchFromFirebase(`registrations/${userAddress}`)
       shouldIncludeNftTransactions = compare(
         userInfo?.appVersion ?? '0.0.0',
         '1.38.0',
+        '>=',
+      )
+      shouldIncludeSwapTransactions = compare(
+        userInfo?.appVersion ?? '0.0.0',
+        '1.39.0',
         '>=',
       )
     }
@@ -176,6 +183,7 @@ export class BlockscoutAPI extends RESTDataSource {
 
     // Order is important when classifying transactions.
     // Think that below is like case statement.
+
     const transactionClassifier = new TransactionClassifier(
       [
         new ExchangeContractCall(context),
@@ -187,6 +195,9 @@ export class BlockscoutAPI extends RESTDataSource {
         new TokenSent(context),
         new EscrowReceived(context),
         new TokenReceived(context),
+        shouldIncludeSwapTransactions
+          ? new SwapTransaction(context)
+          : undefined,
         new ExchangeCeloToToken(context),
         new ExchangeTokenToCelo(context),
         new Any(context),

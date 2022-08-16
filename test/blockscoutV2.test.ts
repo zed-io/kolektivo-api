@@ -185,3 +185,50 @@ describe('NFT events response according to wallet version', () => {
     expect(resultString).toEqual(expect.stringContaining('NFT_RECEIVED'))
   })
 })
+
+describe('Swap events response according to wallet version', () => {
+  let blockscoutAPI: BlockscoutAPI
+
+  beforeEach(async () => {
+    blockscoutAPI = new BlockscoutAPI()
+    mockDataSourcePost.mockClear()
+  })
+
+  it('Swap events should not be included in the reponse if the version is less than 1.39.0', async () => {
+    // Version less than 1.39.0
+    mockFetch.mockImplementation((path: string) => {
+      return {
+        appVersion: '1.4.0',
+      }
+    })
+
+    const result = await blockscoutAPI.getTokenTransactionsV2(
+      '0x0000000000000000000000000000000000007E57',
+      'afterCursor',
+    )
+
+    const resultString = JSON.stringify(result)
+
+    expect(resultString).toEqual(
+      expect.not.stringContaining('SWAP_TRANSACTION'),
+    )
+  })
+
+  it('Swap events should be included in the reponse if the version is equal or higher than 1.39.0', async () => {
+    // Version equal to 1.39.0
+    mockFetch.mockImplementation((path: string) => {
+      return {
+        appVersion: '1.39.0',
+      }
+    })
+
+    const result = await blockscoutAPI.getTokenTransactionsV2(
+      '0x0000000000000000000000000000000000007E57',
+      'afterCursor',
+    )
+
+    const resultString = JSON.stringify(result)
+
+    expect(resultString).toEqual(expect.stringContaining('SWAP_TRANSACTION'))
+  })
+})

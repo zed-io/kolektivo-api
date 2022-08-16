@@ -137,3 +137,23 @@ export function popTransferTo(
       transfer.toAddressHash.toLowerCase() === recipient,
   )
 }
+
+export function isSwap(
+  tokenTransfers: BlockscoutTokenTransfer[],
+  userAddress: string,
+): boolean {
+  let numInTransfer = 0
+  let numOutTransfer = 0
+
+  for (let i = 0; i < tokenTransfers.length; i++) {
+    if (tokenTransfers[i].fromAddressHash.toLowerCase() === userAddress) {
+      numOutTransfer++
+    } else if (tokenTransfers[i].toAddressHash.toLowerCase() === userAddress) {
+      numInTransfer++
+    }
+
+    if (tokenTransfers[i].tokenType !== 'ERC-20') return false
+  }
+
+  return numOutTransfer == 1 && numInTransfer == 1
+}
