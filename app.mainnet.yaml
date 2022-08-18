@@ -15,7 +15,7 @@ env_variables:
   VERIFICATION_REWARDS_ADDRESS: '0x00000000000000000000000000000000000verif'
   WEB3_PROVIDER_URL: 'https://forno.celo.org'
   # Comma separated list of Secrets to load.
-  SECRET_NAMES: 'projects/537878594312/secrets/blockchain-api/versions/2,projects/537878594312/secrets/blockchain-psql/versions/3'
+  SECRET_NAMES: 'projects/537878594312/secrets/blockchain-api/versions/2,projects/537878594312/secrets/blockchain-psql/versions/4'
   EXCHANGES_NETWORK_CONFIG: 'mainnet'
   # This doesn't need to be kept private:
   #  https://docs.sentry.io/product/sentry-basics/dsn-explainer/
