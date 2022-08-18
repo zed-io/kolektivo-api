@@ -1,24 +1,23 @@
 runtime: nodejs16
-service: mainnet
 instance_class: F2
 beta_settings:
-  cloud_sql_instances: kolektivo-backend:us-central1:alfajores=tcp:5432
+  cloud_sql_instances: kolektivo-backend:southamerica-east1:mainnet=tcp:5432
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'mainnet'
   COINGECKO_API: 'https://api.coingecko.com/api/v3'
   EXCHANGE_RATES_API: 'https://apilayer.net/api'
   BLOCKSCOUT_API: 'https://rc1-blockscout.celo-testnet.org'
-  FIREBASE_PROJECT_ID: 'celo-mobile-mainnet'
+  FIREBASE_PROJECT_ID: 'kolektivo-backend'
   # TODO Pull addresses from the build artifacts of the network in protocol/build
   FAUCET_ADDRESS: '0x456f41406B32c45D59E539e4BBA3D7898c3584dA'
   # Unused
   VERIFICATION_REWARDS_ADDRESS: '0x00000000000000000000000000000000000verif'
   WEB3_PROVIDER_URL: 'https://forno.celo.org'
   # Comma separated list of Secrets to load.
-  SECRET_NAMES: 'projects/1027349420744/secrets/blockchain-api/versions/latest,projects/1027349420744/secrets/blockchain-api-db/versions/latest'
+  SECRET_NAMES: 'projects/537878594312/secrets/blockchain-api/versions/2,projects/537878594312/secrets/blockchain-psql/versions/3'
   EXCHANGES_NETWORK_CONFIG: 'mainnet'
   # This doesn't need to be kept private:
   #  https://docs.sentry.io/product/sentry-basics/dsn-explainer/
-  SENTRY_DSN: 'https://6ec58be4c5b04a85870a43d265832fd4@o919540.ingest.sentry.io/6410095'
+  SENTRY_DSN: 'https://b42988eb708c444289d54ef9215a1224@o1207997.ingest.sentry.io/6661198'
   SENTRY_TRACES_SAMPLE_RATE: '0.01'

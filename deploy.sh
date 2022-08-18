@@ -17,9 +17,6 @@ done
 
 [ -z "$NETWORK" ] && echo "Need to set the NETWORK via the -n flag" && exit 1;
 
-# If NETWORK=mainnet, exit;
-[ $NETWORK == "mainnet" ] && exit 0;
-
 PROJECT="kolektivo-backend"
 
 echo "Starting blockchain api deployment."

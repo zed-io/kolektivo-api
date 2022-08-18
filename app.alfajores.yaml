@@ -1,4 +1,5 @@
 runtime: nodejs16
+service: alfajores
 instance_class: F1
 beta_settings:
   cloud_sql_instances: kolektivo-backend:us-central1:alfajores=tcp:5432
@@ -14,5 +15,5 @@ env_variables:
   VERIFICATION_REWARDS_ADDRESS: '0xb4fdaf5f3cd313654aa357299ada901b1d2dd3b5'
   WEB3_PROVIDER_URL: 'https://alfajores-forno.celo-testnet.org'
   # Comma separated list of Secrets to load.
-  SECRET_NAMES: 'projects/537878594312/secrets/alfajores-api/versions/7,projects/537878594312/secrets/alfajores-blockchain-psql/versions/latest'
+  SECRET_NAMES: 'projects/537878594312/secrets/blockchain-api/versions/1,projects/537878594312/secrets/blockchain-psql/versions/2'
   EXCHANGES_NETWORK_CONFIG: 'alfajores'
