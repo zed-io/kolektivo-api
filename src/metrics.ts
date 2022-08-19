@@ -4,6 +4,7 @@ export class ApiMetrics {
   private unknownTransactionCounter: Counter<string>
   private rawTokenTransactionsDuration: Histogram<string>
   private queryExchangeRateDuration: Histogram<string>
+  private queryOracleRateDuration: Histogram<string>
 
   constructor() {
     this.unknownTransactionCounter = new Counter({
@@ -22,6 +23,12 @@ export class ApiMetrics {
       help: 'Measure of the execution duration (ms) of the queryExchangeRate method which fetches exchange rates for Valora.',
       buckets: [0.1, 5, 15, 50, 100, 500],
     })
+
+    this.queryOracleRateDuration = new Histogram({
+      name: 'query_oracle_rate_ms',
+      help: 'Measure of the execution duration (ms) of the queryOracleRate method which fetches exchange rates for Oracle.',
+      buckets: [0.1, 5, 15, 50, 100, 500],
+    })
   }
 
   unknownTransaction() {
@@ -34,6 +41,10 @@ export class ApiMetrics {
 
   setQueryExchangeRateDuration(durationMs: number) {
     this.queryExchangeRateDuration.observe(durationMs)
+  }
+
+  setQueryOracleRateDuration(durationMs: number) {
+    this.queryOracleRateDuration.observe(durationMs)
   }
 }
 export const metrics = new ApiMetrics()

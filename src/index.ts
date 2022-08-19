@@ -12,6 +12,7 @@ import { initApolloServer } from './apolloServer'
 import { cronRouter } from './crons'
 import CurrencyConversionAPI from './currencyConversion/CurrencyConversionAPI'
 import ExchangeRateAPI from './currencyConversion/ExchangeRateAPI'
+import OracleJsonAPI from './currencyConversion/OracleJsonAPI'
 import { initDatabase } from './database/db'
 import knownAddressesCache from './helpers/KnownAddressesCache'
 import tokenInfoCache from './helpers/TokenInfoCache'
@@ -131,6 +132,7 @@ async function main() {
 
   const exchangeRateConfig = exchangesConfigs[args['exchanges-network-config']]
   const exchangeRateManager = createNewManager(exchangeRateConfig)
+  const oracle = new OracleJsonAPI()
 
   knownAddressesCache.startListening()
   tokenInfoCache.startListening()
@@ -138,7 +140,10 @@ async function main() {
   const exchangeRateAPI = new ExchangeRateAPI({
     exchangeRatesAPIAccessKey: args['exchange-rates-api-access-key'],
   })
-  const currencyConversionAPI = new CurrencyConversionAPI({ exchangeRateAPI })
+  const currencyConversionAPI = new CurrencyConversionAPI({
+    exchangeRateAPI,
+    oracle,
+  })
   const pricesService = new PricesService(
     db,
     exchangeRateAPI,
@@ -164,6 +169,7 @@ async function main() {
   const apolloServer = initApolloServer({
     currencyConversionAPI,
     pricesService,
+    oracle,
   })
   await apolloServer.start()
   apolloServer.applyMiddleware({ app, path: GRAPHQL_PATH })

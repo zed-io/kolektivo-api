@@ -70,12 +70,14 @@ export default class ExchangeRateAPI extends RESTDataSource {
     const pair = `${sourceCurrencyCode}/${currencyCode}`
     const path = `/historical`
     const params = {
-      apikey: this.exchangeRatesAPIAccessKey,
       date: formatDateString(date),
       source: sourceCurrencyCode,
     }
     const result = await this.get<ExchangeRateApiResult>(path, params, {
       cacheOptions: { ttl: this.getCacheTtl(date) },
+      headers: {
+        apikey: this.exchangeRatesAPIAccessKey,
+      }
     })
     if (result.success !== true) {
       throw new Error(`Invalid response result: ${JSON.stringify(result)}`)

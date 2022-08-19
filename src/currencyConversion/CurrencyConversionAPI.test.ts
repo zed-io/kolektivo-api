@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 import CurrencyConversionAPI from './CurrencyConversionAPI'
 import ExchangeRateAPI from './ExchangeRateAPI'
 import GoldExchangeRateAPI from './GoldExchangeRateAPI'
+import OracleJsonAPI from './OracleJsonAPI'
 
 jest.mock('./ExchangeRateAPI')
 jest.mock('./GoldExchangeRateAPI')
@@ -10,6 +11,10 @@ jest.mock('./GoldExchangeRateAPI')
 const mockDefaultGetExchangeRate = ExchangeRateAPI.prototype
   .getExchangeRate as jest.Mock
 mockDefaultGetExchangeRate.mockResolvedValue(new BigNumber(20))
+
+const mockDefaultGetOracleRate = OracleJsonAPI.prototype
+  .getExchangeRate as jest.Mock
+mockDefaultGetOracleRate.mockResolvedValue(new BigNumber(15))
 
 const mockGoldGetExchangeRate = GoldExchangeRateAPI.prototype
   .getExchangeRate as jest.Mock
@@ -23,7 +28,11 @@ describe('CurrencyConversionAPI', () => {
     const exchangeRateAPI = new ExchangeRateAPI({
       exchangeRatesAPIAccessKey: 'FOO',
     })
-    currencyConversionAPI = new CurrencyConversionAPI({ exchangeRateAPI })
+    const oracle = new OracleJsonAPI()
+    currencyConversionAPI = new CurrencyConversionAPI({
+      exchangeRateAPI,
+      oracle,
+    })
     currencyConversionAPI.initialize({
       context: {},
       cache: new InMemoryLRUCache(),

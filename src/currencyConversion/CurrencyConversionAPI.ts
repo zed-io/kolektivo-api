@@ -14,23 +14,29 @@ import {
   USD,
 } from './consts'
 import ExchangeRateAPI from './ExchangeRateAPI'
-import GoldExchangeRateAPI from './GoldExchangeRateAPI'
+import OracleJsonAPI from './OracleJsonAPI'
 
 function insertIf<T>(condition: boolean, element: T) {
   return condition ? [element] : []
 }
 export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   exchangeRateAPI: ExchangeRateAPI
-  goldExchangeRateAPI = new GoldExchangeRateAPI()
+  oracle: OracleJsonAPI
 
-  constructor({ exchangeRateAPI }: { exchangeRateAPI: ExchangeRateAPI }) {
+  constructor({
+    exchangeRateAPI,
+    oracle,
+  }: {
+    exchangeRateAPI: ExchangeRateAPI
+    oracle: OracleJsonAPI
+  }) {
     super()
     this.exchangeRateAPI = exchangeRateAPI
+    this.oracle = oracle
   }
 
   initialize(config: DataSourceConfig<TContext>): void {
     this.exchangeRateAPI.initialize(config)
-    this.goldExchangeRateAPI.initialize(config)
   }
 
   async getFromMoneyAmount({
@@ -61,7 +67,6 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   }: CurrencyConversionArgs): Promise<BigNumber> {
     const fromCode = sourceCurrencyCode!
     const toCode = currencyCode
-
     const steps = this.getConversionSteps(fromCode, toCode)
     const ratesPromises = []
     for (let i = 1; i < steps.length; i++) {
@@ -157,7 +162,7 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       // TODO: use real rates once we have the data
       return new BigNumber(1)
     } else if (this.enumContains(supportedPairs, pair)) {
-      return this.goldExchangeRateAPI.getExchangeRate({
+      return this.oracle.getExchangeRate({
         sourceCurrencyCode: fromCode,
         currencyCode: toCode,
         timestamp,

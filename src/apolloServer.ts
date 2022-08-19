@@ -2,6 +2,7 @@ import { ApolloServer } from 'apollo-server-express'
 import { BlockscoutAPI } from './blockscout'
 import { BlockscoutJsonAPI } from './blockscoutJsonApi'
 import CurrencyConversionAPI from './currencyConversion/CurrencyConversionAPI'
+import OracleJsonAPI from './currencyConversion/OracleJsonAPI'
 import { logger } from './logger'
 import PricesService from './prices/PricesService'
 import { resolvers } from './resolvers'
@@ -12,14 +13,17 @@ export interface DataSources {
   blockscoutJsonAPI: BlockscoutJsonAPI
   currencyConversionAPI: CurrencyConversionAPI
   pricesService: PricesService
+  oracle: OracleJsonAPI
 }
 
 export function initApolloServer({
   currencyConversionAPI,
   pricesService,
+  oracle,
 }: {
   currencyConversionAPI: CurrencyConversionAPI
   pricesService: PricesService
+  oracle: OracleJsonAPI
 }) {
   return new ApolloServer({
     typeDefs,
@@ -31,6 +35,7 @@ export function initApolloServer({
         blockscoutJsonAPI: new BlockscoutJsonAPI(),
         currencyConversionAPI,
         pricesService,
+        oracle,
       }
     },
     formatError: (error) => {
