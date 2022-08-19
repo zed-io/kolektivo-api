@@ -8,7 +8,7 @@ env_variables:
   COINGECKO_API: 'https://api.coingecko.com/api/v3'
   EXCHANGE_RATES_API: 'https://api.apilayer.com/currency_data'
   BLOCKSCOUT_API: 'https://rc1-blockscout.celo-testnet.org'
-  FIREBASE_PROJECT_ID: 'https://kolektivo-backend-prod-default-rtdb'
+  FIREBASE_PROJECT_ID: 'kolektivo-backend-prod-default-rtdb'
   # TODO Pull addresses from the build artifacts of the network in protocol/build
   FAUCET_ADDRESS: '0x456f41406B32c45D59E539e4BBA3D7898c3584dA'
   # Unused
