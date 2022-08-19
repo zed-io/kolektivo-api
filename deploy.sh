@@ -30,7 +30,6 @@ function sentry_release () {
   sentry-cli releases set-commits "$VERSION" --auto
   sentry-cli releases finalize "$VERSION"
 }
-
 PROJECT="kolektivo-backend"
 
 echo "Starting blockchain api deployment."
