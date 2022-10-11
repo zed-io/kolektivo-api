@@ -26,7 +26,15 @@ export async function initDatabase({
   }
 }) {
   let db: Knex
-  if (client === 'pg') {
+  if (client === 'sqlite3') {
+    db = knex({
+      client: 'sqlite3',
+      connection: {
+        filename: ':memory:',
+      },
+      useNullAsDefault: true,
+    })
+  } else if (client === 'pg') {
     db = knex({
       client: 'pg',
       connection,
