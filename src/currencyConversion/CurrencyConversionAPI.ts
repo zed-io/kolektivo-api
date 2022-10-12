@@ -1,13 +1,16 @@
 import { DataSource, DataSourceConfig } from 'apollo-datasource'
 import BigNumber from 'bignumber.js'
+import {logger} from '../logger'
 import {
   CurrencyConversionArgs,
   LocalMoneyAmount,
   MoneyAmount,
 } from '../resolvers'
 import {
+  CEUR,
   CGLD,
   CUSD,
+  EUR,
   stablePairs,
   supportedPairs,
   supportedStableTokens,
@@ -102,7 +105,8 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       ) {
         // TODO, we could optimize this and use the cGLD/cEUR rate for instance
         // but it would only be supported from the date when we started storing it
-        return [CGLD, CUSD, ...insertIf(toCode !== USD, USD), toCode]
+        if (toCode === CEUR) return [CGLD, CUSD, USD, EUR, toCode]
+        else return [CGLD, CUSD, ...insertIf(toCode !== USD, USD), toCode]
       }
       // Currency -> cGLD (where X !== celoStableToken)
       else if (
@@ -111,12 +115,13 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       ) {
         // TODO, we could optimize this and use the cEUR/cGLD rate for instance
         // but it would only be supported from the date when we started storing it
+        if (fromCode === CEUR) return [fromCode, EUR, USD, CUSD, CGLD]
         return [fromCode, ...insertIf(fromCode !== USD, USD), CUSD, CGLD]
       }
     } else {
       // celoStableToken -> X (where X!== currency)
       if (
-        this.enumContains(supportedStableTokens, fromCode.toUpperCase()) &&
+        this.enumContains(supportedStableTokens, fromCode.toUpperCase())&&
         this.getCurrency(fromCode) !== toCode
       ) {
         if (this.enumContains(supportedStableTokens, toCode.toUpperCase())) {
@@ -162,6 +167,8 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       // TODO: use real rates once we have the data
       return new BigNumber(1)
     } else if (this.enumContains(supportedPairs, pair)) {
+      // @note Fetch from
+      logger.info(pair, this.enumContains(supportedPairs, pair))
       return this.oracle.getExchangeRate({
         sourceCurrencyCode: fromCode,
         currencyCode: toCode,

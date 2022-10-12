@@ -11,6 +11,7 @@ export interface TokenInfo {
   priceFetchedAt?: number
   isCoreToken?: boolean
   pegTo?: string
+  usdPrice?: string
 }
 
 interface TokensInfo {

@@ -7,18 +7,18 @@ export const EUR = 'EUR'
 export const USD = 'USD'
 export const CELO = 'CELO'
 export enum supportedStableTokens {
-  CEUR,
   CUSD,
 }
 export enum supportedCurrencies {
-  EUR,
   USD,
 }
 export enum supportedPairs {
   'cGLD/cUSD',
   'cUSD/cGLD',
-  'cGLD/cEUR',
-  'cEUR/cGLD',
+  'cEUR/USD',
+  'cEUR/cUSD',
+  'USD/cEUR',
+  'cUSD/cEUR'
 }
 export enum stablePairs {
   'cUSD/USD',
