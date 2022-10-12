@@ -81,7 +81,6 @@ describe('CurrencyConversionAPI', () => {
       sourceCurrencyCode: 'USD',
       currencyCode: 'cGLD',
     })
-    expect(result).toEqual(new BigNumber(10))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(0)
     expect(mockDefaultGetOracleRate).toHaveBeenCalledTimes(1)
     expect(result).toEqual(new BigNumber(15))
@@ -94,7 +93,6 @@ describe('CurrencyConversionAPI', () => {
       currencyCode: 'MXN',
       impliedExchangeRates,
     })
-    expect(result).toEqual(new BigNumber(200))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(1)
     expect(mockDefaultGetOracleRate).toHaveBeenCalledTimes(0)
     expect(result).toEqual(new BigNumber(200))
@@ -105,7 +103,6 @@ describe('CurrencyConversionAPI', () => {
       sourceCurrencyCode: 'MXN',
       currencyCode: 'cGLD',
     })
-    expect(result).toEqual(new BigNumber(200))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(1)
     expect(mockDefaultGetOracleRate).toHaveBeenCalledTimes(1)
     expect(result).toEqual(new BigNumber(300))
@@ -116,7 +113,6 @@ describe('CurrencyConversionAPI', () => {
       sourceCurrencyCode: 'USD',
       currencyCode: 'MXN',
     })
-    expect(result).toEqual(new BigNumber(20))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(1)
     expect(mockDefaultGetOracleRate).toHaveBeenCalledTimes(0)
     expect(result).toEqual(new BigNumber(20))
@@ -171,7 +167,6 @@ describe('CurrencyConversionAPI', () => {
       currencyCode: 'EUR',
     })
 
-    expect(mockGoldGetExchangeRate).toHaveBeenCalledWith({
     expect(mockDefaultGetOracleRate).toHaveBeenCalledWith({
       sourceCurrencyCode: 'cGLD',
       currencyCode: 'cUSD',
@@ -188,7 +183,6 @@ describe('CurrencyConversionAPI', () => {
       sourceCurrencyCode: 'EUR',
       currencyCode: 'cGLD',
     })
-    expect(result).toEqual(new BigNumber(200))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledWith({
       sourceCurrencyCode: 'EUR',
       currencyCode: 'USD',
@@ -230,5 +224,35 @@ describe('CurrencyConversionAPI', () => {
       currencyCode: 'cGLD',
     })
     expect(result).toEqual(new BigNumber(300))
+  })
+
+  it('should retrieve rate for TTD/cEUR', async () => {
+    const result = await currencyConversionAPI.getExchangeRate({
+      currencyCode: 'TTD',
+      sourceCurrencyCode: 'cEUR'
+    })
+
+    expect(mockDefaultGetExchangeRate).toHaveBeenCalledWith({
+      currencyCode: 'TTD',
+      sourceCurrencyCode: 'USD',
+    })
+    expect(mockDefaultGetOracleRate).toHaveBeenCalledWith({
+      currencyCode: 'USD',
+      sourceCurrencyCode: 'cEUR'
+    })
+    expect(result).toEqual(new BigNumber(300))
+  })
+
+  it('should retrieve rate for TTD/GBR', async () => {
+    const result = await currencyConversionAPI.getExchangeRate({
+      currencyCode: 'TTD',
+      sourceCurrencyCode: 'GBR'
+    })
+
+    expect(mockDefaultGetExchangeRate).toHaveBeenCalledWith({
+      currencyCode: 'TTD',
+      sourceCurrencyCode: 'GBR',
+    })
+    expect(result).toEqual(new BigNumber(20))
   })
 })
