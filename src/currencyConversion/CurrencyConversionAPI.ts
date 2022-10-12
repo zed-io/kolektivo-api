@@ -188,6 +188,8 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       // TODO: use real rates once we have the data
       return new BigNumber(1)
     } else if (this.enumContains(supportedPairs, pair)) {
+      // @note Fetch from
+      logger.info(pair, this.enumContains(supportedPairs, pair))
       return this.oracle.getExchangeRate({
         sourceCurrencyCode: fromCode,
         currencyCode: toCode,
