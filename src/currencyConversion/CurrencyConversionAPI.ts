@@ -94,6 +94,7 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   // Going from cGLD to local currency (or vice versa) is currently assumed to be the same as cGLD -> cUSD -> USD -> local currency.
   // And similar to cUSD to local currency, but with one less step.
   private getConversionSteps(fromCode: string, toCode: string) {
+    logger.debug({from: fromCode, to: toCode})
     if (fromCode === toCode) {
       // Same code, nothing to do
       return []
@@ -144,12 +145,22 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       else if (
         toCode === CEUR && this.getCurrency(toCode) !== fromCode
       ) {
-        return [fromCode, USD, toCode]
+        return [
+          fromCode,
+          ...insertIf(this.getCurrency(fromCode)  !== USD, USD),
+          ...insertIf(this.getCurrency(toCode)  !== EUR, EUR), 
+          toCode
+        ]
       }
       else if (
         fromCode === CEUR && this.getCurrency(fromCode) !== toCode
       ) {
-        return [fromCode, USD, toCode]
+        return [
+          fromCode, 
+          ...insertIf(this.getCurrency(toCode)  !== USD, USD),
+          ...insertIf(this.getCurrency(toCode)  !== EUR, EUR),
+           toCode
+          ]
       }
     }
     return [fromCode, toCode]
@@ -173,12 +184,10 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
     if (impliedExchangeRates && impliedExchangeRates[pair]) {
       return new BigNumber(impliedExchangeRates[pair])
     }
-    if (this.enumContains(stablePairs, pair)) {
+    if (this.enumContains(stablePairs, pair) || fromCode === toCode) {
       // TODO: use real rates once we have the data
       return new BigNumber(1)
     } else if (this.enumContains(supportedPairs, pair)) {
-      // @note Fetch from
-      logger.info(pair, this.enumContains(supportedPairs, pair))
       return this.oracle.getExchangeRate({
         sourceCurrencyCode: fromCode,
         currencyCode: toCode,

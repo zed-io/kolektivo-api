@@ -34,7 +34,6 @@ export default class OracleJsonAPI extends RESTDataSource {
         throw new Error(`Unable to get rate for pair: ${pair}`)
       }
 
-      logger.info(rate.toString())
       return rate
     } catch (error) {
       logger.error({
@@ -56,10 +55,8 @@ export default class OracleJsonAPI extends RESTDataSource {
   async getFirebaseRate(
     currency: string,
   ): Promise<BigNumber> {
-    logger.info(currency)
     const tokenInfo: TokenInfo | undefined = tokenInfoCache.tokenInfoBySymbol(currency)
     const usdPrice: BigNumber = new BigNumber(tokenInfo?.usdPrice ?? 0)
-    logger.info(tokenInfo)
     return usdPrice;
   }
 }
