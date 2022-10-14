@@ -38,7 +38,7 @@ export default class OracleJsonAPI extends RESTDataSource {
       return rate
     } catch (error) {
       logger.error({
-        type: 'ERROR_UPDATING_ORACLE_PRICES',
+        type: 'ERROR_FETCHING_ORACLE_PRICES',
         error: error,
       })
       throw error
