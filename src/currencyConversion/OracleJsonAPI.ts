@@ -17,8 +17,8 @@ export default class OracleJsonAPI extends RESTDataSource {
   }: CurrencyConversionArgs): Promise<BigNumber> {
     try {
       // Note: Can be any pair in `supportedPairs`
-      const toToken = (sourceCurrencyCode === CGLD ? CELO : sourceCurrencyCode) || CUSD;
-      const fromToken = currencyCode === CGLD ? CELO : currencyCode;
+      const fromToken = (sourceCurrencyCode === CGLD ? CELO : sourceCurrencyCode) || CUSD;
+      const toToken = currencyCode === CGLD ? CELO : currencyCode;
       const pair = `${sourceCurrencyCode}/${currencyCode}`
       // Note: If converting from cUSD -> X, 
       // then the rate needs to be inverted
