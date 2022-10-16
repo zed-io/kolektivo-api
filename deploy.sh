@@ -26,7 +26,10 @@ gcloud --project ${PROJECT} app deploy -q "app.${NETWORK}.yaml"
 gcloud --project ${PROJECT} app deploy -q cron.yaml
 
 echo 'Hitting service url to trigger update'
-# This seems to be necessary to ensure get App Engine starts the service
-curl "https://${NETWORK}-blockchain-api.kolektivo-backend.uc.r.appspot.com" > /dev/null 2>&1
+
+if [ "$NETWORK" == "mainnet" ] then
+  curl "https://${PROJECT}.uc.r.appspot.com" > /dev/null 2>&1
+else
+  curl "https://${NETWORK}-dot-${PROJECT}.uc.r.appspot.com" > /dev/null 2>&1
 
 echo "Done deployment."
