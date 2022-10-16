@@ -144,12 +144,12 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       else if (
         toCode === CEUR && this.getCurrency(toCode) !== fromCode
       ) {
-        return [fromCode, USD, toCode]
+        return [fromCode, ...insertIf(fromCode !== USD, USD), toCode]
       }
       else if (
         fromCode === CEUR && this.getCurrency(fromCode) !== toCode
       ) {
-        return [fromCode, USD, toCode]
+        return [fromCode, ...insertIf(toCode !== USD, USD), toCode]
       }
     }
     return [fromCode, toCode]
