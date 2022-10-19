@@ -6,6 +6,8 @@ import { updateFirebase } from '../firebase'
 import tokenInfoCache, { TokenInfo } from '../helpers/TokenInfoCache'
 import PricesService from './PricesService'
 import asyncPool from 'tiny-async-pool'
+import { KG } from '../currencyConversion/consts'
+import BigNumber from 'bignumber.js'
 
 const FIREBASE_NODE_KEY = '/tokensInfo'
 const MAX_CONCURRENCY = 30
@@ -25,7 +27,7 @@ function addPeggedPrices(prices: PriceByAddress) {
 export async function updateCurrentPrices({
   exchangeRateManager,
 }: {
-  exchangeRateManager: ExchangeRateManager
+  exchangeRateManager: ExchangeRateManager,
 }) {
   logger.info('Updating current prices in firebase')
 
@@ -34,17 +36,22 @@ export async function updateCurrentPrices({
     await exchangeRateManager.calculatecUSDPrices(),
   )
 
-  const tokenAddresses = tokenInfoCache.getTokensAddresses()
+  const kGPrice = new BigNumber(1/ 1.8); // @note Hardcoded ANGUSD
 
-  const updateObject = tokenAddresses.reduce(
-    (result: any, tokenAddress: string) => {
-      const price = prices[tokenAddress.toLowerCase()]
+  const tokensInfo: TokenInfo[] = tokenInfoCache.getTokensInfo()
+
+  const updateObject = tokensInfo.reduce(
+    (result: any, tokenInfo: TokenInfo) => {
+      const { address, symbol } = tokenInfo;
+      const price = prices[address.toLowerCase()]
 
       if (price) {
-        result[`${tokenAddress}/usdPrice`] = price.toString()
-        result[`${tokenAddress}/priceFetchedAt`] = fetchTime
+        result[`${address}/usdPrice`] = price.toString()
+        result[`${address}/priceFetchedAt`] = fetchTime
+      } else if (symbol === KG) {
+        result[`${address}/usdPrice`] = kGPrice.toString()
+        result[`${address}/priceFetchedAt`] = fetchTime
       }
-
       return result
     },
     {},
@@ -60,28 +67,32 @@ export async function updateHistoricalPrices({
   pricesService: PricesService
 }) {
   logger.info('Updating historical prices in firebase')
-  const tokenAddresses = tokenInfoCache.getTokensAddresses()
+  const tokensInfo = tokenInfoCache.getTokensInfo()
 
-  await updateLastDayPrices(pricesService, tokenAddresses)
+  await updateLastDayPrices(pricesService, tokensInfo)
   logger.info('Updated historical prices in firebase')
 }
 
 async function updateLastDayPrices(
   pricesService: PricesService,
-  tokenAddresses: string[],
+  tokensInfo: TokenInfo[],
 ) {
   const lastDay = new Date(Date.now() - 1 * ONE_DAY_IN_MS)
   await asyncPool(
     MAX_CONCURRENCY,
-    tokenAddresses,
-    async (tokenAddress: string) => {
+    tokensInfo,
+    async (tokenInfo: TokenInfo) => {
       try {
-        const lastDayPrice = await pricesService.getTokenTocUSDPrice(
-          tokenAddress,
+        const {address, symbol} = tokenInfo;
+        let lastDayPrice = await pricesService.getTokenTocUSDPrice(
+          address,
           lastDay,
         )
+        if (symbol == KG) {
+          lastDayPrice = new BigNumber(1/1.8) // @note Hardcoded ANGUSD
+        }
         await updateFirebase(
-          `${FIREBASE_NODE_KEY}/${tokenAddress}/historicalUsdPrices/lastDay`,
+          `${FIREBASE_NODE_KEY}/${address}/historicalUsdPrices/lastDay`,
           {
             price: lastDayPrice.toString(),
             at: lastDay.getTime(),
@@ -90,7 +101,7 @@ async function updateLastDayPrices(
       } catch (error) {
         logger.warn({
           type: 'ERROR_UPDATING_LAST_DAY_PRICE',
-          tokenAddress,
+          tokenInfo,
           error,
         })
       }
