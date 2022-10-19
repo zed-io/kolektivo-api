@@ -16,7 +16,7 @@ const mockGetExchangeRate = jest.fn()
 
 const mockExchangeAPI = {
   getExchangeRate: (args: any) => mockGetExchangeRate(args),
-}
+} 
 
 describe('PricesService', () => {
   let db: Knex

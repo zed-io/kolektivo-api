@@ -100,7 +100,7 @@ export default class PricesService<TContext = any> extends DataSource {
     return new BigNumber(prevPriceRow.price)
   }
 
-  private async usdToLocalCurrency(
+  async usdToLocalCurrency(
     localCurrency: string,
     date: Date,
   ): Promise<BigNumber> {

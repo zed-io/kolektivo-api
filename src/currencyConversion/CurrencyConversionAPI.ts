@@ -1,6 +1,6 @@
 import { DataSource, DataSourceConfig } from 'apollo-datasource'
 import BigNumber from 'bignumber.js'
-import {logger} from '../logger'
+import { logger } from '../logger'
 import {
   CurrencyConversionArgs,
   LocalMoneyAmount,
@@ -12,6 +12,7 @@ import {
   CUSD,
   EUR,
   stablePairs,
+  supportedOracleTokens,
   supportedPairs,
   supportedStableTokens,
   USD,
@@ -93,7 +94,8 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   // Get conversion steps given the data we have today
   // Going from cGLD to local currency (or vice versa) is currently assumed to be the same as cGLD -> cUSD -> USD -> local currency.
   // And similar to cUSD to local currency, but with one less step.
-  private getConversionSteps(fromCode: string, toCode: string) {
+  // @ts-ignore
+  private getConversionSteps2(fromCode: string, toCode: string) {
     if (fromCode === toCode) {
       // Same code, nothing to do
       return []
@@ -121,7 +123,7 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
     } else {
       // celoStableToken -> X (where X!== currency)
       if (
-        this.enumContains(supportedStableTokens, fromCode.toUpperCase())&&
+        this.enumContains(supportedStableTokens, fromCode.toUpperCase()) &&
         this.getCurrency(fromCode) !== toCode
       ) {
         if (this.enumContains(supportedStableTokens, toCode.toUpperCase())) {
@@ -137,20 +139,28 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
       // currency -> X (where X!== celoStableToken)
       else if (
         this.getCurrency(toCode) !== fromCode &&
-        this.enumContains(supportedStableTokens, toCode.toUpperCase())
+        this.enumContains(supportedStableTokens, toCode.toUpperCase()) // e.g. from TTD to KG
       ) {
         return [fromCode, this.getCurrency(toCode), toCode]
-      }
-      else if (
-        toCode === CEUR && this.getCurrency(toCode) !== fromCode
-      ) {
+      } else if (toCode === CEUR && this.getCurrency(toCode) !== fromCode) {
         return [fromCode, ...insertIf(fromCode !== USD, USD), toCode]
-      }
-      else if (
-        fromCode === CEUR && this.getCurrency(fromCode) !== toCode
-      ) {
+      } else if (fromCode === CEUR && this.getCurrency(fromCode) !== toCode) {
         return [fromCode, ...insertIf(toCode !== USD, USD), toCode]
       }
+    }
+    return [fromCode, toCode]
+  }
+
+  public getConversionSteps(fromCode: string, toCode: string) {
+    if (fromCode == toCode) return []
+    const pair = `${fromCode}/${toCode}`
+    if (this.enumContains(stablePairs, pair)) return [fromCode, toCode]
+    if (this.enumContains(supportedOracleTokens, fromCode.toUpperCase())) {
+      // @note can directly get USD price from firebase
+      return [fromCode, ...insertIf(toCode !== USD && toCode !== CUSD, USD), toCode]
+    } else if (this.enumContains(supportedOracleTokens, toCode.toUpperCase())) {
+      // @note can directly get USD price from firebase
+      return [fromCode, ...insertIf(fromCode !== USD && fromCode !== CUSD, USD), toCode]
     }
     return [fromCode, toCode]
   }
@@ -164,6 +174,40 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   }
 
   private getSupportedExchangeRate(
+    fromCode: string,
+    toCode: string,
+    timestamp?: number,
+    impliedExchangeRates?: MoneyAmount['impliedExchangeRates'],
+  ): BigNumber | Promise<BigNumber> {
+    const pair = `${fromCode}/${toCode}`
+    if (impliedExchangeRates && impliedExchangeRates[pair]) {
+      return new BigNumber(impliedExchangeRates[pair])
+    }
+    else if (this.enumContains(stablePairs, pair)) {
+      return new BigNumber(1)
+    }
+    else if (
+      this.enumContains(supportedOracleTokens, fromCode.toUpperCase()) ||
+      this.enumContains(supportedOracleTokens, toCode.toUpperCase())
+    ) {
+      return this.oracle.getExchangeRate({
+        sourceCurrencyCode: fromCode,
+        currencyCode: toCode,
+        timestamp,
+      })
+    } else {
+      // @note The currencies are either FIAT to FIAT or not supported
+      return this.exchangeRateAPI.getExchangeRate({
+        sourceCurrencyCode: fromCode,
+        currencyCode: toCode,
+        timestamp,
+      })
+    }
+    return new BigNumber(0)
+  }
+
+  //@ts-ignore
+  private getSupportedExchangeRate2(
     fromCode: string,
     toCode: string,
     timestamp?: number,

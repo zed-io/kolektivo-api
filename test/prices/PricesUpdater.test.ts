@@ -10,6 +10,9 @@ import { ExchangeRateManager } from '@valora/exchanges'
 import BigNumber from 'bignumber.js'
 import PricesService from '../../src/prices/PricesService'
 
+const kG = {
+  address: '0xcura'
+}
 const cUSD = {
   address: '0x1234',
 }
@@ -43,11 +46,12 @@ jest.mock('../../src/firebase', () => ({
 }))
 
 jest.mock('../../src/helpers/TokenInfoCache', () => ({
-  getTokensInfo: () => [cUSD, cEUR, mcEUR, extraToken, extraPegToken],
+  getTokensInfo: () => [kG, cUSD, cEUR, mcEUR, extraToken, extraPegToken],
   getTokensAddresses: () => [
     cUSD.address,
     cEUR.address,
     mcEUR.address,
+    kG.address,
     extraToken.address,
     extraPegToken.address,
   ],
@@ -68,6 +72,7 @@ describe('Mocking date and exchange manager', () => {
     mockCalculatePrices.mockReturnValue({
       [cUSD.address]: new BigNumber(1),
       [cEUR.address]: new BigNumber(1.17),
+      [kG.address]: new BigNumber(1.8),
       [bitcoin.address]: new BigNumber(60000),
     })
 
@@ -81,6 +86,7 @@ describe('Mocking date and exchange manager', () => {
   })
 
   describe('PricesUpdater#updateCurrentPrices', () => {
+
     it('should update current prices for tokens in tokensInfo', async () => {
       await updateCurrentPrices({
         exchangeRateManager: mockExchangeRateManager,
@@ -90,6 +96,8 @@ describe('Mocking date and exchange manager', () => {
         [`${cUSD.address}/priceFetchedAt`]: mockDate,
         [`${cEUR.address}/usdPrice`]: '1.17',
         [`${cEUR.address}/priceFetchedAt`]: mockDate,
+        [`${kG.address}/usdPrice`]: '1.8',
+        [`${kG.address}/priceFetchedAt`]: mockDate,
         // It's peg to the value of cEUR
         [`${mcEUR.address}/usdPrice`]: '1.17',
         [`${mcEUR.address}/priceFetchedAt`]: mockDate,
@@ -116,7 +124,16 @@ describe('Mocking date and exchange manager', () => {
         exchangeRateManager: mockExchangeRateManager,
       })
 
-      expect(await db(tableName)).toHaveLength(3)
+      expect(await db(tableName)).toHaveLength(4)
+
+      const kgQuery = await db(tableName).where({ token: kG.address })
+      expect(kgQuery).toHaveLength(1)
+      expect(kgQuery[0]).toMatchObject({
+        base_token: cUSD.address,
+        token: kG.address,
+        price: '1.8',
+        at: new Date(mockDate).toISOString(),
+      })
 
       const bitcoinQuery = await db(tableName).where({ token: bitcoin.address })
       expect(bitcoinQuery).toHaveLength(1)
@@ -177,6 +194,8 @@ describe('Mocking date and exchange manager', () => {
               return new BigNumber(1)
             case cEUR.address:
               return new BigNumber(1.17)
+            case kG.address:
+              return new BigNumber(1.8)
             default:
               throw new Error('Could find token prices')
           }
@@ -203,6 +222,13 @@ describe('Mocking date and exchange manager', () => {
         `${FIREBASE_NODE}/${cEUR.address}/historicalUsdPrices/lastDay`,
         {
           price: '1.17',
+          at: expectedDateTime,
+        },
+      )
+      expect(mockUpdateFirebase).toHaveBeenCalledWith(
+        `${FIREBASE_NODE}/${kG.address}/historicalUsdPrices/lastDay`,
+        {
+          price: '1.8',
           at: expectedDateTime,
         },
       )
