@@ -65,17 +65,27 @@ export default class ExchangeRateAPI extends RESTDataSource {
     currencyCode: string,
     date: Date,
   ) {
+    // Auth method is slightly different between the old and new API
+    // TODO: remove this once both mainnet and alfajores use the new API
+    const useLegacyAccessKeyQueryParam = this.baseURL?.startsWith(
+      'https://apilayer.net/api',
+    )
     // Record time at beginning of execution
     const t0 = performance.now()
     const pair = `${sourceCurrencyCode}/${currencyCode}`
     const path = `/historical`
     const params = {
-      access_key: this.exchangeRatesAPIAccessKey,
+      ...(useLegacyAccessKeyQueryParam
+        ? { access_key: this.exchangeRatesAPIAccessKey }
+        : {}),
       date: formatDateString(date),
       source: sourceCurrencyCode,
     }
     const result = await this.get<ExchangeRateApiResult>(path, params, {
       cacheOptions: { ttl: this.getCacheTtl(date) },
+      ...(!useLegacyAccessKeyQueryParam
+        ? { headers: { apikey: this.exchangeRatesAPIAccessKey } }
+        : {}),
     })
     if (result.success !== true) {
       throw new Error(`Invalid response result: ${JSON.stringify(result)}`)

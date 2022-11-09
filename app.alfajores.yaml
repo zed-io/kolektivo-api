@@ -3,7 +3,7 @@ service: blockchain-api
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'alfajores'
-  EXCHANGE_RATES_API: 'https://apilayer.net/api'
+  EXCHANGE_RATES_API: 'https://api.apilayer.com/currency_data'
   BLOCKSCOUT_API: 'https://explorer.celo.org/alfajores'
   FIREBASE_PROJECT_ID: 'celo-mobile-alfajores'
   # TODO Pull addresses from the build artifacts of the network in protocol/build
