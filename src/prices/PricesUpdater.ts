@@ -6,6 +6,8 @@ import { updateFirebase } from '../firebase'
 import tokenInfoCache, { TokenInfo } from '../helpers/TokenInfoCache'
 import PricesService from './PricesService'
 import asyncPool from 'tiny-async-pool'
+import { CELO_TOKEN_ADDRESS, STAKED_CELO_TOKEN_ADDRESS } from '../config'
+import { getStakedCeloPriceInCelo } from './StakedCelo'
 
 const FIREBASE_NODE_KEY = '/tokensInfo'
 const MAX_CONCURRENCY = 30
@@ -30,10 +32,7 @@ export async function updateCurrentPrices({
   logger.info('Updating current prices in firebase')
 
   const fetchTime = Date.now()
-  const prices = addPeggedPrices(
-    await exchangeRateManager.calculatecUSDPrices(),
-  )
-
+  const prices = await calculatePrices(exchangeRateManager)
   const tokenAddresses = tokenInfoCache.getTokensAddresses()
 
   const updateObject = tokenAddresses.reduce(
@@ -108,9 +107,7 @@ export async function storeHistoricalPrices({
   logger.info('Storing historical prices')
 
   const fetchTime = new Date(Date.now())
-  const prices = addPeggedPrices(
-    await exchangeRateManager.calculatecUSDPrices(),
-  )
+  const prices = await calculatePrices(exchangeRateManager)
   const cUSDAddress = exchangeRateManager.cUSDTokenAddress
 
   const batchInsertItems = Object.entries(prices)
@@ -133,4 +130,33 @@ export async function storeHistoricalPrices({
     })
 
   logger.info('Stored historical prices')
+}
+
+async function addStakedCelo(prices: PriceByAddress) {
+  const returnedPrices = { ...prices }
+
+  const celoPrice = prices[CELO_TOKEN_ADDRESS]
+  const stakedCeloPriceInCelo = await getStakedCeloPriceInCelo()
+
+  if (!celoPrice || !stakedCeloPriceInCelo) {
+    logger.warn({
+      type: 'ERROR_CALCULATING_STAKED_CELO_PRICE',
+      celoPrice,
+      stakedCeloPriceInCelo,
+    })
+  }
+
+  returnedPrices[STAKED_CELO_TOKEN_ADDRESS] = celoPrice.times(
+    stakedCeloPriceInCelo,
+  )
+
+  return returnedPrices
+}
+
+async function calculatePrices(
+  exchangeRateManager: ExchangeRateManager,
+): Promise<PriceByAddress> {
+  const prices = await exchangeRateManager.calculatecUSDPrices()
+
+  return await addStakedCelo(addPeggedPrices(prices))
 }

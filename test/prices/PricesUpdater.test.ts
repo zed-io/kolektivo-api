@@ -9,6 +9,15 @@ import { Knex } from 'knex'
 import { ExchangeRateManager } from '@valora/exchanges'
 import BigNumber from 'bignumber.js'
 import PricesService from '../../src/prices/PricesService'
+import { CELO_TOKEN_ADDRESS, STAKED_CELO_TOKEN_ADDRESS } from '../../src/config'
+
+const STAKED_CELO = {
+  address: STAKED_CELO_TOKEN_ADDRESS,
+}
+
+const CELO = {
+  address: CELO_TOKEN_ADDRESS,
+}
 
 const cUSD = {
   address: '0x1234',
@@ -35,6 +44,8 @@ const OLD_ENV = process.env
 
 const FIREBASE_NODE = '/tokensInfo'
 
+const TABLE_NAME = 'historical_token_prices'
+
 const mockUpdateFirebase = jest.fn()
 
 jest.mock('../../src/firebase', () => ({
@@ -43,14 +54,28 @@ jest.mock('../../src/firebase', () => ({
 }))
 
 jest.mock('../../src/helpers/TokenInfoCache', () => ({
-  getTokensInfo: () => [cUSD, cEUR, mcEUR, extraToken, extraPegToken],
+  getTokensInfo: () => [
+    CELO,
+    cUSD,
+    cEUR,
+    mcEUR,
+    extraToken,
+    extraPegToken,
+    STAKED_CELO,
+  ],
   getTokensAddresses: () => [
+    CELO.address,
     cUSD.address,
     cEUR.address,
     mcEUR.address,
     extraToken.address,
     extraPegToken.address,
+    STAKED_CELO.address,
   ],
+}))
+
+jest.mock('../../src/prices/StakedCelo', () => ({
+  getStakedCeloPriceInCelo: async () => new BigNumber(2),
 }))
 
 describe('Mocking date and exchange manager', () => {
@@ -66,6 +91,7 @@ describe('Mocking date and exchange manager', () => {
   beforeAll(async () => {
     jest.clearAllMocks()
     mockCalculatePrices.mockReturnValue({
+      [CELO.address]: new BigNumber(0.4),
       [cUSD.address]: new BigNumber(1),
       [cEUR.address]: new BigNumber(1.17),
       [bitcoin.address]: new BigNumber(60000),
@@ -86,6 +112,8 @@ describe('Mocking date and exchange manager', () => {
         exchangeRateManager: mockExchangeRateManager,
       })
       expect(mockUpdateFirebase).toHaveBeenCalledWith(FIREBASE_NODE, {
+        [`${CELO.address}/usdPrice`]: '0.4',
+        [`${CELO.address}/priceFetchedAt`]: mockDate,
         [`${cUSD.address}/usdPrice`]: '1',
         [`${cUSD.address}/priceFetchedAt`]: mockDate,
         [`${cEUR.address}/usdPrice`]: '1.17',
@@ -93,13 +121,14 @@ describe('Mocking date and exchange manager', () => {
         // It's peg to the value of cEUR
         [`${mcEUR.address}/usdPrice`]: '1.17',
         [`${mcEUR.address}/priceFetchedAt`]: mockDate,
+        [`${STAKED_CELO.address}/usdPrice`]: '0.8',
+        [`${STAKED_CELO.address}/priceFetchedAt`]: mockDate,
       })
     })
   })
 
   describe('PricesUpdater#storeHistoricalPrices', () => {
     let db: Knex
-    const tableName = 'historical_token_prices'
 
     beforeEach(async () => {
       db = await initDatabase({ client: 'sqlite3' })
@@ -110,40 +139,19 @@ describe('Mocking date and exchange manager', () => {
     })
 
     it('should store token prices', async () => {
-      expect(await db(tableName)).toHaveLength(0)
+      expect(await db(TABLE_NAME)).toHaveLength(0)
       await storeHistoricalPrices({
         db,
         exchangeRateManager: mockExchangeRateManager,
       })
 
-      expect(await db(tableName)).toHaveLength(3)
+      expect(await db(TABLE_NAME)).toHaveLength(5)
 
-      const bitcoinQuery = await db(tableName).where({ token: bitcoin.address })
-      expect(bitcoinQuery).toHaveLength(1)
-      expect(bitcoinQuery[0]).toMatchObject({
-        base_token: cUSD.address,
-        token: bitcoin.address,
-        price: '60000',
-        at: new Date(mockDate).toISOString(),
-      })
-
-      const cEURQuery = await db(tableName).where({ token: cEUR.address })
-      expect(cEURQuery).toHaveLength(1)
-      expect(cEURQuery[0]).toMatchObject({
-        base_token: cUSD.address,
-        token: cEUR.address,
-        price: '1.17',
-        at: new Date(mockDate).toISOString(),
-      })
-
-      const mcEURQuery = await db(tableName).where({ token: mcEUR.address })
-      expect(mcEURQuery).toHaveLength(1)
-      expect(mcEURQuery[0]).toMatchObject({
-        base_token: cUSD.address,
-        token: mcEUR.address,
-        price: '1.17',
-        at: new Date(mockDate).toISOString(),
-      })
+      await expectPriceToBeStored(db, bitcoin.address, '60000', mockDate)
+      await expectPriceToBeStored(db, cEUR.address, '1.17', mockDate)
+      await expectPriceToBeStored(db, mcEUR.address, '1.17', mockDate)
+      await expectPriceToBeStored(db, CELO.address, '0.4', mockDate)
+      await expectPriceToBeStored(db, STAKED_CELO.address, '0.8', mockDate) // It's 2 times the price of CELO
     })
   })
 
@@ -217,3 +225,19 @@ describe('Mocking date and exchange manager', () => {
     })
   })
 })
+
+async function expectPriceToBeStored(
+  db: Knex,
+  address: string,
+  price: string,
+  mockDate: number,
+) {
+  const query = await db(TABLE_NAME).where({ token: address })
+  expect(query).toHaveLength(1)
+  expect(query[0]).toMatchObject({
+    base_token: cUSD.address,
+    token: address,
+    price,
+    at: new Date(mockDate).toISOString(),
+  })
+}

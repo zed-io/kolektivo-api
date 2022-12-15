@@ -10,7 +10,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "e2e": "firebase emulators:exec \"node_modules/.bin/ts-node e2e/run.ts\" --only=database,auth --project=e2e",
-    "test": "jest --ci --silent --coverage --runInBand && eslint --ext=.ts src/ test/ e2e/ && prettier --check \"./**/*.ts\"",
+    "integrationTest": "jest --ci --silent --coverage --runInBand integrationTests",
+    "test": "jest --ci --silent --coverage --runInBand src/ test/ && eslint --ext=.ts src/ test/ e2e/ integrationTests/ && prettier --check \"./**/*.ts\"",
     "test:fast": "jest --ci",
     "test:verbose": "jest --ci --verbose --runInBand",
     "firebase:emulate": "firebase emulators:start --only database,auth --project=emulator",
