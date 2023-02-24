@@ -122,15 +122,19 @@ async function main() {
     },
   })
 
-  const exchangeRateConfig = exchangesConfigs[args['exchanges-network-config']]
-  const exchangeRateManager = createNewManager({
-    ...exchangeRateConfig,
-    ubeswap: {
-      ...exchangeRateConfig.ubeswap,
-      // cREAL liquidity dropped below 20k on 2023-02-16, so we're lowering the threshold for now
-      minLiquidity: 10_000,
-    },
-  })
+  const network = args['exchanges-network-config']
+  let exchangeRateConfig = exchangesConfigs[network]
+  if (network === 'mainnet') {
+    exchangeRateConfig = {
+      ...exchangeRateConfig,
+      ubeswap: {
+        ...exchangeRateConfig.ubeswap,
+        // cREAL liquidity dropped below 20k on 2023-02-16, so we're lowering the threshold for now
+        minLiquidity: 10_000,
+      },
+    }
+  }
+  const exchangeRateManager = createNewManager(exchangeRateConfig)
 
   knownAddressesCache.startListening()
   tokenInfoCache.startListening()
