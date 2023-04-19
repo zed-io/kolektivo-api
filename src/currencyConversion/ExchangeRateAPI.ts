@@ -5,7 +5,7 @@ import { EXCHANGE_RATES_API } from '../config'
 import { metrics } from '../metrics'
 import { CurrencyConversionArgs } from '../resolvers'
 import { formatDateString } from '../utils'
-import { USD } from './consts'
+import { ANG, USD } from './consts'
 const { performance } = require('perf_hooks')
 interface ExchangeRateApiResult {
   success: boolean
@@ -37,6 +37,9 @@ export default class ExchangeRateAPI extends RESTDataSource {
   }: CurrencyConversionArgs): Promise<BigNumber> {
     const fromCode = sourceCurrencyCode
     const toCode = currencyCode
+
+    if (fromCode === ANG && toCode === USD) {return new BigNumber(1.8)}
+    else if (fromCode === USD && toCode === ANG) {return new BigNumber(1/1.8)}
 
     try {
       if (!currencyCode) {

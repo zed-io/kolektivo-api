@@ -22,7 +22,9 @@ PROJECT="kolektivo-backend"
 echo "Starting blockchain api deployment."
 
 echo 'Deploying to gcloud'
+
 gcloud --project ${PROJECT} app deploy -q "app.${NETWORK}.yaml"
+gcloud --project ${PROJECT} app deploy -q dispatch.yaml
 gcloud --project ${PROJECT} app deploy -q cron.yaml
 
 echo 'Hitting service url to trigger update'

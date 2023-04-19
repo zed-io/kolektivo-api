@@ -2,7 +2,7 @@ runtime: nodejs16
 service: alfajores
 instance_class: F1
 beta_settings:
-  cloud_sql_instances: kolektivo-backend:us-central1:alfajores=tcp:5432
+  cloud_sql_instances: wambackend:us-central1:wam-db=tcp:5432
 env_variables:
   NODE_ENV: 'production'
   DEPLOY_ENV: 'alfajores'

@@ -1,0 +1,9 @@
+dispatch:
+  - url: "kolektivo.app/*"
+    service: kolektivo-app
+
+  - url: "www.kolektivo.app/*"
+    service: kolektivo-app
+
+  - url: "api.kolektivo.cw/*"
+    service: vendors-production
