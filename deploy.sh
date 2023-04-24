@@ -33,5 +33,5 @@ if [ "$NETWORK" == "mainnet" ] then
   curl "https://${PROJECT}.uc.r.appspot.com" > /dev/null 2>&1
 else
   curl "https://${NETWORK}-dot-${PROJECT}.uc.r.appspot.com" > /dev/null 2>&1
-
+fi
 echo "Done deployment."
