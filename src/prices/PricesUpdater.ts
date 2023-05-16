@@ -144,6 +144,7 @@ async function addStakedCelo(prices: PriceByAddress) {
       celoPrice,
       stakedCeloPriceInCelo,
     })
+    return returnedPrices
   }
 
   returnedPrices[STAKED_CELO_TOKEN_ADDRESS] = celoPrice.times(
