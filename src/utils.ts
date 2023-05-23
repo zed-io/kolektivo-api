@@ -145,3 +145,9 @@ export async function getContractKit(): Promise<ContractKit> {
     throw new Error('Failed to create contractKit instance')
   }
 }
+
+// Get the Valora version from the User-Agent header
+// Current format: Valora/1.49.0 (iOS 14.5; iPhone)
+export function getValoraVersionFromUserAgent(userAgent: string | undefined) {
+  return userAgent?.match(/Valora\/([\S]+)/)?.[1]
+}

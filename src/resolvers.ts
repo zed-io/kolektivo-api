@@ -123,6 +123,7 @@ export interface LocalMoneyAmount {
 }
 
 interface Context {
+  valoraVersion: string | undefined
   dataSources: DataSources
   localCurrencyCode?: string
 }
@@ -176,12 +177,13 @@ export const resolvers = {
       args: TokenTransactionV2Args,
       context: Context,
     ): Promise<TransactionsBatch> => {
-      const { dataSources } = context
+      const { dataSources, valoraVersion } = context
       context.localCurrencyCode = args.localCurrencyCode
       try {
         return await dataSources.blockscoutAPI.getTokenTransactionsV2(
           args.address,
           args.afterCursor,
+          valoraVersion,
         )
       } catch (error) {
         logger.error({

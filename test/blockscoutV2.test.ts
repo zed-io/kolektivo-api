@@ -108,10 +108,10 @@ describe('Blockscout', () => {
 
   beforeEach(async () => {
     blockscoutAPI = new BlockscoutAPI()
-    mockDataSourcePost.mockClear()
+    jest.clearAllMocks()
   })
 
-  it('should return the same return if afterCursor is passed or not', async () => {
+  it('should return the same result if afterCursor is passed or not', async () => {
     const resultWithoutAfterCursor = await blockscoutAPI.getTokenTransactionsV2(
       '0x0000000000000000000000000000000000007E57',
     )
@@ -144,30 +144,38 @@ describe('NFT events response according to wallet version', () => {
 
   beforeEach(async () => {
     blockscoutAPI = new BlockscoutAPI()
-    mockDataSourcePost.mockClear()
+    jest.clearAllMocks()
   })
 
-  it('NFT events should not be included in the reponse if the version is less than 1.38.0', async () => {
-    // Version less than 1.38.0
-    mockFetch.mockImplementation((path: string) => {
-      return {
-        appVersion: '1.4.0',
-      }
-    })
-
+  it('NFT events should not be included in the response if the version is less than 1.38.0', async () => {
     const result = await blockscoutAPI.getTokenTransactionsV2(
       '0x0000000000000000000000000000000000007E57',
       'afterCursor',
+      '1.4.0',
     )
 
     const resultString = JSON.stringify(result)
 
     expect(resultString).toEqual(expect.not.stringContaining('NFT_SENT'))
     expect(resultString).toEqual(expect.not.stringContaining('NFT_RECEIVED'))
+    expect(mockFetch).toHaveBeenCalledTimes(0)
   })
 
-  it('NFT events should be included in the reponse if the version is equal or higher than 1.38.0', async () => {
-    // Version equal to 1.38.0
+  it('NFT events should be included in the response if the version is equal or higher than 1.38.0', async () => {
+    const result = await blockscoutAPI.getTokenTransactionsV2(
+      '0x0000000000000000000000000000000000007E57',
+      'afterCursor',
+      '1.38.0',
+    )
+
+    const resultString = JSON.stringify(result)
+
+    expect(resultString).toEqual(expect.stringContaining('NFT_SENT'))
+    expect(resultString).toEqual(expect.stringContaining('NFT_RECEIVED'))
+    expect(mockFetch).toHaveBeenCalledTimes(0)
+  })
+
+  it('fetches the app version from firebase when not set directly', async () => {
     mockFetch.mockImplementation((path: string) => {
       return {
         appVersion: '1.38.0',
@@ -177,12 +185,14 @@ describe('NFT events response according to wallet version', () => {
     const result = await blockscoutAPI.getTokenTransactionsV2(
       '0x0000000000000000000000000000000000007E57',
       'afterCursor',
+      undefined,
     )
 
     const resultString = JSON.stringify(result)
 
     expect(resultString).toEqual(expect.stringContaining('NFT_SENT'))
     expect(resultString).toEqual(expect.stringContaining('NFT_RECEIVED'))
+    expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -191,20 +201,14 @@ describe('Swap events response according to wallet version', () => {
 
   beforeEach(async () => {
     blockscoutAPI = new BlockscoutAPI()
-    mockDataSourcePost.mockClear()
+    jest.clearAllMocks()
   })
 
-  it('Swap events should not be included in the reponse if the version is less than 1.39.0', async () => {
-    // Version less than 1.39.0
-    mockFetch.mockImplementation((path: string) => {
-      return {
-        appVersion: '1.4.0',
-      }
-    })
-
+  it('Swap events should not be included in the response if the version is less than 1.39.0', async () => {
     const result = await blockscoutAPI.getTokenTransactionsV2(
       '0x0000000000000000000000000000000000007E57',
       'afterCursor',
+      '1.4.0',
     )
 
     const resultString = JSON.stringify(result)
@@ -212,10 +216,23 @@ describe('Swap events response according to wallet version', () => {
     expect(resultString).toEqual(
       expect.not.stringContaining('SWAP_TRANSACTION'),
     )
+    expect(mockFetch).toHaveBeenCalledTimes(0)
   })
 
-  it('Swap events should be included in the reponse if the version is equal or higher than 1.39.0', async () => {
-    // Version equal to 1.39.0
+  it('Swap events should be included in the response if the version is equal or higher than 1.39.0', async () => {
+    const result = await blockscoutAPI.getTokenTransactionsV2(
+      '0x0000000000000000000000000000000000007E57',
+      'afterCursor',
+      '1.39.0',
+    )
+
+    const resultString = JSON.stringify(result)
+
+    expect(resultString).toEqual(expect.stringContaining('SWAP_TRANSACTION'))
+    expect(mockFetch).toHaveBeenCalledTimes(0)
+  })
+
+  it('fetches the app version from firebase when not set directly', async () => {
     mockFetch.mockImplementation((path: string) => {
       return {
         appVersion: '1.39.0',
@@ -225,10 +242,12 @@ describe('Swap events response according to wallet version', () => {
     const result = await blockscoutAPI.getTokenTransactionsV2(
       '0x0000000000000000000000000000000000007E57',
       'afterCursor',
+      undefined,
     )
 
     const resultString = JSON.stringify(result)
 
     expect(resultString).toEqual(expect.stringContaining('SWAP_TRANSACTION'))
+    expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 })

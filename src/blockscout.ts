@@ -151,6 +151,7 @@ export class BlockscoutAPI extends RESTDataSource {
   async getTokenTransactionsV2(
     address: string,
     afterCursor?: string,
+    valoraVersion?: string,
   ): Promise<TransactionsBatch> {
     const userAddress = address.toLowerCase()
 
@@ -160,14 +161,21 @@ export class BlockscoutAPI extends RESTDataSource {
     let shouldIncludeNftTransactions = false
     let shouldIncludeSwapTransactions = false
     if (userAddress != null) {
-      const userInfo = await fetchFromFirebase(`registrations/${userAddress}`)
+      let appVersion = valoraVersion
+      // TODO: remove fetching the app version from Firebase in a few months from now (2023/01/06)
+      // once the majority of users have updated to a version that includes this info in the User-Agent
+      if (!appVersion) {
+        const userInfo = await fetchFromFirebase(`registrations/${userAddress}`)
+        appVersion = userInfo?.appVersion
+      }
+
       shouldIncludeNftTransactions = compare(
-        userInfo?.appVersion ?? '0.0.0',
+        appVersion ?? '0.0.0',
         '1.38.0',
         '>=',
       )
       shouldIncludeSwapTransactions = compare(
-        userInfo?.appVersion ?? '0.0.0',
+        appVersion ?? '0.0.0',
         '1.39.0',
         '>=',
       )

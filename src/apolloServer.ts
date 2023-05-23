@@ -6,6 +6,7 @@ import { logger } from './logger'
 import PricesService from './prices/PricesService'
 import { resolvers } from './resolvers'
 import typeDefs from './schema'
+import { getValoraVersionFromUserAgent } from './utils'
 
 export interface DataSources {
   blockscoutAPI: BlockscoutAPI
@@ -32,6 +33,9 @@ export function initApolloServer({
         pricesService,
       }
     },
+    context: ({ req }) => ({
+      valoraVersion: getValoraVersionFromUserAgent(req.header('user-agent')),
+    }),
     formatError: (error) => {
       logger.error({
         type: 'UNHANDLED_ERROR',
