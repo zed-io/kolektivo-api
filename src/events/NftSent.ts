@@ -26,6 +26,7 @@ export class NftSent extends TransactionType {
 
   async getEvent(transaction: Transaction) {
     return await EventBuilder.nftTransferEvent(
+      this.context.userAddress.toLowerCase(),
       transaction,
       TokenTransactionTypeV2.NFT_SENT,
     )

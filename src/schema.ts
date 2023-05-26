@@ -172,12 +172,42 @@ export default `type ExchangeRate {
     account: String!
   }
 
+  type NftAttributes {
+    trait_type: String
+    value: String
+  }
+
+  type NftMetadata {
+    id: Decimal
+    name: String!
+    description: String!
+    image: String!
+    dna: String
+    date: Timestamp
+    attributes: [NftAttributes]
+  }
+
+  type NftMedia {
+    raw: String
+    gateway: String
+  }
+
+  type Nft {
+    tokenId: String
+    contractAddress: Address
+    tokenUri: String
+    metadata: NftMetadata
+    ownerAddress: Address
+    media: [NftMedia]
+  }
+
   type NftTransferV2 implements TokenTransactionV2 {
     type: TokenTransactionTypeV2!
     transactionHash: String!
     timestamp: Timestamp!
     block: String!
     fees: [FeeV2]
+    nfts: [Nft]
   }
 
   type TokenExchangeV2 implements TokenTransactionV2 {

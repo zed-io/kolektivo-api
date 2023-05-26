@@ -22,6 +22,7 @@ jest.mock('../src/config.ts', () => {
   return {
     ...(jest.requireActual('../src/config.ts') as any),
     FAUCET_ADDRESS: '0x0000000000000000000000000000000000f40c37',
+    GET_NFT_API_URL: 'https://example.com/getNft',
   }
 })
 
@@ -189,6 +190,22 @@ describe('NFT events response according to wallet version', () => {
     )
 
     const resultString = JSON.stringify(result)
+
+    // Check that the correct NFT transactions are returned
+    expect(result.transactions[0]).toMatchObject({
+      type: 'NFT_RECEIVED',
+      timestamp: 1658684540000,
+      block: '14203346',
+      transactionHash:
+        '0xc0b6cb773e2d62c065a3dd96de54c669f377bfb6e2ca51911ea7b27e9523fb0d',
+    })
+    expect(result.transactions[1]).toMatchObject({
+      type: 'NFT_SENT',
+      timestamp: 1657641046000,
+      block: '14012341',
+      transactionHash:
+        '0xc3a66297e26a7074ab0367dafd30d56a9589de37ec5d2f161d0a77dda05595ad',
+    })
 
     expect(resultString).toEqual(expect.stringContaining('NFT_SENT'))
     expect(resultString).toEqual(expect.stringContaining('NFT_RECEIVED'))

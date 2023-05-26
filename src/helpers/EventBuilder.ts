@@ -1,10 +1,14 @@
 import { BigNumber } from 'bignumber.js'
 import { BlockscoutTokenTransfer } from '../blockscout'
-import { FeeV2, TokenTransactionTypeV2 } from '../resolvers'
+import { FeeV2, Nft, TokenTransactionTypeV2 } from '../resolvers'
 import { Fee, Transaction } from '../transaction/Transaction'
 import { ContractAddresses, getContractAddresses, WEI_PER_GOLD } from '../utils'
 import knownAddressesCache from './KnownAddressesCache'
 import tokenInfoCache from './TokenInfoCache'
+import fetch from 'cross-fetch'
+import { GET_NFT_API_URL } from '../config'
+import { logger } from '../logger'
+import asyncPool from 'tiny-async-pool'
 
 export class EventBuilder {
   static contractAddresses: ContractAddresses
@@ -58,6 +62,7 @@ export class EventBuilder {
   }
 
   static async nftTransferEvent(
+    address: string | null,
     transaction: Transaction,
     eventType: TokenTransactionTypeV2,
     fees?: Fee[],
@@ -66,11 +71,46 @@ export class EventBuilder {
     const block = transaction.blockNumber
     const timestamp = transaction.timestamp
 
+    // Top check if the event type is valid
+    if (
+      eventType !== TokenTransactionTypeV2.NFT_SENT &&
+      eventType !== TokenTransactionTypeV2.NFT_RECEIVED
+    ) {
+      throw new Error(`Invalid event type ${eventType}`)
+    }
+
+    // Filter by address based on the event eventType - fromAddress for sent, toAddress for received
+    const filterFn =
+      eventType === TokenTransactionTypeV2.NFT_SENT
+        ? (transfer: { fromAddressHash: string | null }) =>
+            transfer.fromAddressHash === address
+        : (transfer: { toAddressHash: string | null }) =>
+            transfer.toAddressHash === address
+
+    const filteredTransfers = transaction.transfers.filter(filterFn)
+
+    const nfts = await asyncPool(
+      5,
+      filteredTransfers,
+      async ({ tokenAddress, tokenId }: any) => {
+        try {
+          return await EventBuilder.getNft(tokenAddress, tokenId)
+        } catch (error) {
+          logger.error({
+            message: `Error fetching NFT ${tokenAddress}:${tokenId}`,
+            error,
+          })
+        }
+      },
+    )
+    const validNfts = nfts.filter((nft) => nft !== undefined) as Nft[]
+
     return {
       type: eventType,
       timestamp,
       block,
       transactionHash,
+      nfts: validNfts,
       ...(fees && {
         fees: await EventBuilder.formatFees(fees, transaction.timestamp),
       }),
@@ -129,5 +169,32 @@ export class EventBuilder {
 
   static getWeiForToken(address: string) {
     return Math.pow(10, tokenInfoCache.getDecimalsForToken(address))
+  }
+
+  static async getNft(contractAddress: string, tokenId: string): Promise<Nft> {
+    try {
+      const url = `${GET_NFT_API_URL}?contractAddress=${contractAddress}&tokenId=${tokenId}`
+      const response = await fetch(url)
+      if (!response.ok)
+        throw new Error(
+          `Received response code ${response.status} from ${GET_NFT_API_URL}`,
+        )
+      const { result } = await response.json()
+      const { tokenUri, metadata, ownerAddress, media } = result
+      return {
+        tokenId,
+        contractAddress,
+        ownerAddress,
+        tokenUri,
+        metadata,
+        media,
+      }
+    } catch (error) {
+      logger.warn({
+        msg: `Error: Could not get Nft details - contractAddress: '${contractAddress}' tokenId: '${tokenId}'`,
+        error,
+      })
+      throw error
+    }
   }
 }

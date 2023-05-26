@@ -95,6 +95,7 @@ export interface BlockscoutTokenTransfer {
   tokenAddress: string
   value: string
   tokenType: string
+  tokenId: string
 }
 
 const MAX_RESULTS_PER_QUERY = 25
@@ -126,6 +127,7 @@ query Transfers($address: AddressHash!, $afterCursor: String) {
               value
               tokenAddress
               tokenType
+              tokenId
             }
           }
         }

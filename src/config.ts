@@ -54,3 +54,5 @@ export const STAKED_CELO_TOKEN_ADDRESS = (
 export const STAKED_CELO_MANAGER_ADDRESS = (
   process.env.STAKED_CELO_MANAGER_ADDRESS as string
 ).toLowerCase()
+
+export const GET_NFT_API_URL = process.env.GET_NFT_API_URL
