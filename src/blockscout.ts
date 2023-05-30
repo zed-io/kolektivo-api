@@ -12,12 +12,12 @@ import {
   ExchangeTokenToCelo,
   TokenReceived,
   TokenSent,
-} from './events'
-import { EscrowContractCall } from './events/EscrowContractCall'
-import { ExchangeContractCall } from './events/ExchangeContractCall'
-import { NftReceived } from './events/NftReceived'
-import { NftSent } from './events/NftSent'
-import { SwapTransaction } from './events/SwapTransaction'
+} from './events/blockscout'
+import { EscrowContractCall } from './events/blockscout/EscrowContractCall'
+import { ExchangeContractCall } from './events/blockscout/ExchangeContractCall'
+import { NftReceived } from './events/blockscout/NftReceived'
+import { NftSent } from './events/blockscout/NftSent'
+import { SwapTransaction } from './events/blockscout/SwapTransaction'
 import { Input } from './helpers/Input'
 import { InputDecoderLegacy } from './helpers/InputDecoderLegacy'
 import tokenInfoCache from './helpers/TokenInfoCache'
@@ -43,59 +43,26 @@ import { LegacyTransferCollection } from './legacyTransaction/LegacyTransferColl
 import { LegacyTransfersNavigator } from './legacyTransaction/LegacyTransfersNavigator'
 import { logger } from './logger'
 import { metrics } from './metrics'
-import { MoneyAmount, TokenTransactionArgs } from './resolvers'
-import { Transaction } from './transaction/Transaction'
-import { TransactionAggregator } from './transaction/TransactionAggregator'
+import { BlockscoutTransaction } from './transaction/blockscout/BlockscoutTransaction'
+import { BlockscoutTransactionAggregator } from './transaction/blockscout/BlockscoutTransactionAggregator'
 import { TransactionClassifier } from './transaction/TransactionClassifier'
 import { ContractAddresses, getContractAddresses } from './utils'
 import { fetchFromFirebase } from './firebase'
 import { compare } from 'compare-versions'
-import { isTransactionType } from './transaction/TransactionType'
-
-export interface BlockscoutTransferTx {
-  blockNumber: number
-  transactionHash: string
-  timestamp: string
-  gasPrice: string
-  gasUsed: string
-  feeToken: string
-  gatewayFee: string
-  gatewayFeeRecipient: string
-  input: string
-  celoTransfers: BlockscoutCeloTransfer[]
-}
+import { isDefined } from './transaction/TransactionType'
+import {
+  PageInfo,
+  MoneyAmount,
+  TokenTransactionArgs,
+  BlockscoutTokenTransfer,
+  TokenTransactionResult,
+  TokenTransactionV2,
+} from './types'
+import { BlockscoutTransactionType } from './transaction/blockscout/BlockscoutTransactionType'
 
 export interface TransactionsBatch {
-  transactions: Transaction[]
+  transactions: BlockscoutTransaction[]
   pageInfo: PageInfo
-}
-
-export interface PageInfo {
-  startCursor: string
-  endCursor: string
-  hasNextPage: boolean
-  hasPreviousPage: boolean
-}
-
-export interface BlockscoutCeloTransfer {
-  fromAddressHash: string
-  toAddressHash: string
-  fromAccountHash: string
-  toAccountHash: string
-  token: string
-  value: string
-}
-
-export interface BlockscoutTokenTransfer {
-  fromAddressHash: string
-  toAddressHash: string
-  fromAccountHash: string
-  toAccountHash: string
-  token: string
-  tokenAddress: string
-  value: string
-  tokenType: string
-  tokenId: string
 }
 
 const MAX_RESULTS_PER_QUERY = 25
@@ -154,7 +121,7 @@ export class BlockscoutAPI extends RESTDataSource {
     address: string,
     afterCursor?: string,
     valoraVersion?: string,
-  ): Promise<TransactionsBatch> {
+  ): Promise<TokenTransactionResult> {
     const userAddress = address.toLowerCase()
 
     // For now, when you create a new transaction type other than TokenTransferV2, TokenExchangeV2
@@ -193,8 +160,10 @@ export class BlockscoutAPI extends RESTDataSource {
 
     // Order is important when classifying transactions.
     // Think that below is like case statement.
-
-    const transactionClassifier = new TransactionClassifier(
+    const transactionClassifier = new TransactionClassifier<
+      BlockscoutTransaction,
+      BlockscoutTransactionType
+    >(
       [
         new ExchangeContractCall(context),
         new EscrowContractCall(context),
@@ -211,22 +180,22 @@ export class BlockscoutAPI extends RESTDataSource {
         new ExchangeCeloToToken(context),
         new ExchangeTokenToCelo(context),
         new Any(context),
-      ].filter(isTransactionType),
+      ].filter(isDefined),
     )
 
     const classifiedTransactions = transactionBatch.transactions.map(
       (transaction) => transactionClassifier.classify(transaction),
     )
 
-    const aggregatedTransactions = TransactionAggregator.aggregate(
+    const aggregatedTransactions = BlockscoutTransactionAggregator.aggregate(
       classifiedTransactions,
     )
 
-    const events: any[] = (
+    const events: TokenTransactionV2[] = (
       await Promise.all(
-        aggregatedTransactions.map(async ({ transaction, type }) => {
+        aggregatedTransactions.map(async ({ transaction, transactionType }) => {
           try {
-            return await type.getEvent(transaction)
+            return await transactionType.getEvent(transaction)
           } catch (error) {
             logger.warn({
               type: 'ERROR_MAPPING_TO_EVENT_V2',
@@ -237,7 +206,7 @@ export class BlockscoutAPI extends RESTDataSource {
         }),
       )
     )
-      .filter((e) => e)
+      .filter(isDefined)
       .sort((a, b) => b.timestamp - a.timestamp)
 
     logger.info({
@@ -277,20 +246,22 @@ export class BlockscoutAPI extends RESTDataSource {
           (edge: any) => edge.node,
         )
 
-        return new Transaction(partialTransferTx, tokenTransfers)
+        return new BlockscoutTransaction(partialTransferTx, tokenTransfers)
       },
     )
 
     const supportedTokens = new Set(tokenInfoCache.getTokensAddresses())
 
-    const filteredUnknownTokens = transactions.filter((tx: Transaction) => {
-      return tx.transfers.every((transfer: BlockscoutTokenTransfer) => {
-        return (
-          supportedTokens.has(transfer.tokenAddress.toLowerCase()) ||
-          (shouldIncludeNftTransactions && transfer.tokenType === 'ERC-721')
-        )
-      })
-    })
+    const filteredUnknownTokens = transactions.filter(
+      (tx: BlockscoutTransaction) => {
+        return tx.transfers.every((transfer: BlockscoutTokenTransfer) => {
+          return (
+            supportedTokens.has(transfer.tokenAddress.toLowerCase()) ||
+            (shouldIncludeNftTransactions && transfer.tokenType === 'ERC-721')
+          )
+        })
+      },
+    )
 
     // Record time at end of execution
     const t1 = performance.now()

@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js'
-import { FeeType } from '../resolvers'
+import { FeeType } from '../types'
 import { Fee, LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
 import { LegacyTransactionType } from '../legacyTransaction/LegacyTransactionType'
 

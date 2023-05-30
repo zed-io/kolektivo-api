@@ -1,4 +1,4 @@
-import { BlockscoutCeloTransfer } from '../blockscout'
+import { BlockscoutCeloTransfer } from '../types'
 import { ContractAddresses, Contracts } from '../utils'
 import { LegacyTransferCollection } from './LegacyTransferCollection'
 

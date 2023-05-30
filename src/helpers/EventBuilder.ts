@@ -1,7 +1,17 @@
 import { BigNumber } from 'bignumber.js'
-import { BlockscoutTokenTransfer } from '../blockscout'
-import { FeeV2, Nft, TokenTransactionTypeV2 } from '../resolvers'
-import { Fee, Transaction } from '../transaction/Transaction'
+import {
+  FeeV2,
+  TokenTransactionTypeV2,
+  BlockscoutTokenTransfer,
+  TokenTransferV2,
+  NftTransferV2,
+  TokenExchangeV2,
+  Nft,
+} from '../types'
+import {
+  Fee,
+  BlockscoutTransaction,
+} from '../transaction/blockscout/BlockscoutTransaction'
 import { ContractAddresses, getContractAddresses, WEI_PER_GOLD } from '../utils'
 import knownAddressesCache from './KnownAddressesCache'
 import tokenInfoCache from './TokenInfoCache'
@@ -18,13 +28,13 @@ export class EventBuilder {
   }
 
   static async transferEvent(
-    transaction: Transaction,
+    transaction: BlockscoutTransaction,
     transfer: BlockscoutTokenTransfer,
     eventType: TokenTransactionTypeV2,
     address: string,
     account?: string,
     fees?: Fee[],
-  ) {
+  ): Promise<TokenTransferV2> {
     const transactionHash = transaction.transactionHash
     const block = transaction.blockNumber
     const timestamp = transaction.timestamp
@@ -62,11 +72,11 @@ export class EventBuilder {
   }
 
   static async nftTransferEvent(
+    transaction: BlockscoutTransaction,
     address: string | null,
-    transaction: Transaction,
     eventType: TokenTransactionTypeV2,
     fees?: Fee[],
-  ) {
+  ): Promise<NftTransferV2> {
     const transactionHash = transaction.transactionHash
     const block = transaction.blockNumber
     const timestamp = transaction.timestamp
@@ -118,12 +128,12 @@ export class EventBuilder {
   }
 
   static async exchangeEvent(
-    transaction: Transaction,
+    transaction: BlockscoutTransaction,
     eventType: TokenTransactionTypeV2,
     inTransfer: BlockscoutTokenTransfer,
     outTransfer: BlockscoutTokenTransfer,
     fees?: Fee[],
-  ) {
+  ): Promise<TokenExchangeV2> {
     const transactionHash = transaction.transactionHash
     const block = transaction.blockNumber
     const timestamp = transaction.timestamp

@@ -1,10 +1,6 @@
 import { DataSource, DataSourceConfig } from 'apollo-datasource'
 import BigNumber from 'bignumber.js'
-import {
-  CurrencyConversionArgs,
-  LocalMoneyAmount,
-  MoneyAmount,
-} from '../resolvers'
+import { CurrencyConversionArgs, LocalMoneyAmount, MoneyAmount } from '../types'
 import {
   CGLD,
   CUSD,

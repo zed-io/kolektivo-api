@@ -1,10 +1,13 @@
 import { BigNumber } from 'bignumber.js'
-import { Input } from '../helpers/Input'
-import { BlockscoutTokenTransfer, BlockscoutTransferTx } from '../blockscout'
-import { CELO } from '../currencyConversion/consts'
-import { FeeType } from '../resolvers'
-import { Contracts } from '../utils'
-import { popTransferTo } from './TransfersUtils'
+import { Input } from '../../helpers/Input'
+import {
+  BlockscoutTokenTransfer,
+  BlockscoutTransferTx,
+  FeeType,
+} from '../../types'
+import { CELO } from '../../currencyConversion/consts'
+import { Contracts } from '../../utils'
+import { popTransferTo } from '../TransfersUtils'
 
 export interface Fee {
   type: FeeType
@@ -12,7 +15,7 @@ export interface Fee {
   currencyCode: string
 }
 
-export class Transaction {
+export class BlockscoutTransaction {
   get transactionHash(): string {
     return this.blockscoutTx.transactionHash
   }

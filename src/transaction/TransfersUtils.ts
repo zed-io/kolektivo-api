@@ -1,6 +1,6 @@
 import { FAUCET_ADDRESS } from '../config'
 import { Contracts, getContractAddressesOrError } from '../utils'
-import { BlockscoutTokenTransfer } from '../blockscout'
+import { BlockscoutTokenTransfer } from '../types'
 export type TransferFilter = (transfer: BlockscoutTokenTransfer) => boolean
 
 const MINTED_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000'

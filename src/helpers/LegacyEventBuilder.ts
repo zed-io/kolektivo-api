@@ -1,11 +1,11 @@
 import { BigNumber } from 'bignumber.js'
-import { BlockscoutCeloTransfer } from '../blockscout'
 import { CGLD, CUSD } from '../currencyConversion/consts'
 import {
+  BlockscoutCeloTransfer,
   LegacyEventTypes,
   Fee as FormattedFee,
   MoneyAmount,
-} from '../resolvers'
+} from '../types'
 import { Fee, LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
 import { WEI_PER_GOLD } from '../utils'
 import knownAddressesCache from './KnownAddressesCache'

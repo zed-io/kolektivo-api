@@ -1,21 +1,23 @@
 import {
   containsTransferFrom,
   getTransferFrom,
-} from '../transaction/TransfersUtils'
-import { EventBuilder } from '../helpers/EventBuilder'
-import { TokenTransactionTypeV2 } from '../resolvers'
-import { Transaction } from '../transaction/Transaction'
-import { TransactionType } from '../transaction/TransactionType'
+} from '../../transaction/TransfersUtils'
+import { EventBuilder } from '../../helpers/EventBuilder'
+import { TokenTransactionTypeV2, TokenTransferV2 } from '../../types'
+import { BlockscoutTransaction } from '../../transaction/blockscout/BlockscoutTransaction'
+import { BlockscoutTransactionType } from '../../transaction/blockscout/BlockscoutTransactionType'
 
-export class TokenSent extends TransactionType {
-  matches(transaction: Transaction): boolean {
+export class TokenSent extends BlockscoutTransactionType {
+  public isAggregatable = false
+
+  matches(transaction: BlockscoutTransaction): boolean {
     return (
       transaction.transfers.length === 1 &&
       containsTransferFrom(transaction.transfers, this.context.userAddress)
     )
   }
 
-  async getEvent(transaction: Transaction) {
+  async getEvent(transaction: BlockscoutTransaction): Promise<TokenTransferV2> {
     const transfer = getTransferFrom(
       transaction.transfers,
       this.context.userAddress,
@@ -33,9 +35,5 @@ export class TokenSent extends TransactionType {
       transfer.toAccountHash,
       transaction.fees,
     )
-  }
-
-  isAggregatable(): boolean {
-    return false
   }
 }

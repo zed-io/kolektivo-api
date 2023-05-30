@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 import { logger } from '../logger'
 import { EXCHANGE_RATES_API } from '../config'
 import { metrics } from '../metrics'
-import { CurrencyConversionArgs } from '../resolvers'
+import { CurrencyConversionArgs } from '../types'
 import { formatDateString } from '../utils'
 import { USD } from './consts'
 const { performance } = require('perf_hooks')

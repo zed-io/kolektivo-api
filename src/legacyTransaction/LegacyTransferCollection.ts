@@ -1,4 +1,4 @@
-import { BlockscoutCeloTransfer } from '../blockscout'
+import { BlockscoutCeloTransfer } from '../types'
 
 export type TransferFilter = (transfer: BlockscoutCeloTransfer) => boolean
 

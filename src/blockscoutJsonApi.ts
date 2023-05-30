@@ -1,6 +1,6 @@
 import { RESTDataSource } from 'apollo-datasource-rest'
 import { BLOCKSCOUT_API } from './config'
-import { UserTokenBalance } from './resolvers'
+import { UserTokenBalance } from './types'
 
 interface BlockscoutTokenBalance {
   balance: string

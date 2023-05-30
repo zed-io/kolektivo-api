@@ -3,15 +3,17 @@ import {
   containsTransferTo,
   getMintedTokenTransfer,
   getTransferTo,
-} from '../transaction/TransfersUtils'
-import { EventBuilder } from '../helpers/EventBuilder'
-import { Transaction } from '../transaction/Transaction'
-import { TransactionType } from '../transaction/TransactionType'
-import { Contracts } from '../utils'
-import { TokenTransactionTypeV2 } from '../resolvers'
+} from '../../transaction/TransfersUtils'
+import { EventBuilder } from '../../helpers/EventBuilder'
+import { BlockscoutTransaction } from '../../transaction/blockscout/BlockscoutTransaction'
+import { BlockscoutTransactionType } from '../../transaction/blockscout/BlockscoutTransactionType'
+import { Contracts } from '../../utils'
+import { TokenTransactionTypeV2, TokenExchangeV2 } from '../../types'
 
-export class ExchangeCeloToToken extends TransactionType {
-  matches(transaction: Transaction): boolean {
+export class ExchangeCeloToToken extends BlockscoutTransactionType {
+  public isAggregatable = false
+
+  matches(transaction: BlockscoutTransaction): boolean {
     return (
       transaction.transfers.length === 2 &&
       containsTransferTo(transaction.transfers, Contracts.Reserve) &&
@@ -19,7 +21,7 @@ export class ExchangeCeloToToken extends TransactionType {
     )
   }
 
-  async getEvent(transaction: Transaction) {
+  async getEvent(transaction: BlockscoutTransaction): Promise<TokenExchangeV2> {
     const inTransfer = getTransferTo(transaction.transfers, Contracts.Reserve)
     const outTransfer = getMintedTokenTransfer(transaction.transfers)
 
@@ -38,9 +40,5 @@ export class ExchangeCeloToToken extends TransactionType {
       outTransfer,
       transaction.fees,
     )
-  }
-
-  isAggregatable(): boolean {
-    return false
   }
 }

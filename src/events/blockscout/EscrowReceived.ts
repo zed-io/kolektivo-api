@@ -1,22 +1,24 @@
 import {
   getTransferFrom,
   containsTransferFrom,
-} from '../transaction/TransfersUtils'
-import { EventBuilder } from '../helpers/EventBuilder'
-import { TokenTransactionTypeV2 } from '../resolvers'
-import { Transaction } from '../transaction/Transaction'
-import { TransactionType } from '../transaction/TransactionType'
-import { Contracts } from '../utils'
+} from '../../transaction/TransfersUtils'
+import { EventBuilder } from '../../helpers/EventBuilder'
+import { TokenTransactionTypeV2, TokenTransferV2 } from '../../types'
+import { BlockscoutTransaction } from '../../transaction/blockscout/BlockscoutTransaction'
+import { BlockscoutTransactionType } from '../../transaction/blockscout/BlockscoutTransactionType'
+import { Contracts } from '../../utils'
 
-export class EscrowReceived extends TransactionType {
-  matches(transaction: Transaction): boolean {
+export class EscrowReceived extends BlockscoutTransactionType {
+  public isAggregatable = false
+
+  matches(transaction: BlockscoutTransaction): boolean {
     return (
       this.isEscrowReceivedToEOA(transaction) ||
       this.isEscrowReceivedToMTW(transaction)
     )
   }
 
-  async getEvent(transaction: Transaction) {
+  async getEvent(transaction: BlockscoutTransaction): Promise<TokenTransferV2> {
     const transfer = getTransferFrom(transaction.transfers, Contracts.Escrow)
 
     if (!transfer) {
@@ -32,18 +34,14 @@ export class EscrowReceived extends TransactionType {
     )
   }
 
-  isAggregatable(): boolean {
-    return false
-  }
-
-  isEscrowReceivedToEOA(transaction: Transaction): boolean {
+  isEscrowReceivedToEOA(transaction: BlockscoutTransaction): boolean {
     return (
       transaction.transfers.length === 1 &&
       containsTransferFrom(transaction.transfers, Contracts.Escrow)
     )
   }
 
-  isEscrowReceivedToMTW(transaction: Transaction): boolean {
+  isEscrowReceivedToMTW(transaction: BlockscoutTransaction): boolean {
     const transferToAcccount = getTransferFrom(
       transaction.transfers,
       Contracts.Escrow,

@@ -1,8 +1,7 @@
 import { BigNumber } from 'bignumber.js'
-import { BlockscoutTransferTx } from '../blockscout'
+import { BlockscoutTransferTx, FeeType } from '../types'
 import { CGLD } from '../currencyConversion/consts'
 import { InputDecoderLegacy } from '../helpers/InputDecoderLegacy'
-import { FeeType } from '../resolvers'
 import { Contracts } from '../utils'
 import { LegacyTransfersNavigator } from './LegacyTransfersNavigator'
 

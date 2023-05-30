@@ -1,5 +1,5 @@
 import { LegacyEventBuilder } from '../helpers/LegacyEventBuilder'
-import { LegacyEventTypes } from '../resolvers'
+import { LegacyEventTypes } from '../types'
 import { LegacyTransaction } from '../legacyTransaction/LegacyTransaction'
 import { LegacyTransactionType } from '../legacyTransaction/LegacyTransactionType'
 
