@@ -14,10 +14,9 @@ import {
   TokenAmount,
   MoneyAmount,
   TokenTransactionResult,
-  Chain,
 } from './types'
 
-export interface Context {
+interface Context {
   valoraVersion: string | undefined
   dataSources: DataSources
   localCurrencyCode?: string
@@ -32,33 +31,17 @@ export const resolvers = {
     ): Promise<TokenTransactionResult> => {
       const { dataSources, valoraVersion } = context
       context.localCurrencyCode = args.localCurrencyCode
-      const chain = args.chain ?? Chain.Celo
       try {
-        switch (chain) {
-          case Chain.Celo: {
-            return await dataSources.blockscoutAPI.getTokenTransactionsV2(
-              args.address,
-              args.afterCursor,
-              valoraVersion,
-            )
-          }
-          case Chain.Ethereum: {
-            return await dataSources.ethereumDataSource.getTokenTxs(
-              args.address,
-              args.afterCursor,
-              valoraVersion,
-            )
-          }
-          default: {
-            throw new Error(`Unknown chain parameter: ${chain}`)
-          }
-        }
+        return await dataSources.blockscoutAPI.getTokenTransactionsV2(
+          args.address,
+          args.afterCursor,
+          valoraVersion,
+        )
       } catch (error) {
         logger.error({
           type: 'ERROR_FETCHING_TOKEN_TRANSACTIONS_V2',
           address: args.address,
           localCurrency: args.localCurrencyCode,
-          chain: args.chain ?? Chain.Celo,
           error,
         })
         throw error
