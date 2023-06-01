@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { BlockscoutTransaction } from './transaction/blockscout/BlockscoutTransaction'
+import { AlchemyTransaction } from './transaction/alchemy/AlchemyTransaction'
 
 // Event types
 export enum TokenTransactionTypeV2 {
@@ -231,6 +232,8 @@ export interface TokenTransactionV2Args {
   localCurrencyCode?: string
   // If present, this parameter is used as the 'after' parameter for blockscout calls.
   afterCursor?: string
+  // If present, will fetch transactions from the specified chain, else will default to Celo
+  chain?: Chain
 }
 
 export interface TokenTransactionArgs {
@@ -266,6 +269,10 @@ export interface LocalMoneyAmount {
 
 export type LegacyEventInterface = LegacyExchangeEvent | LegacyTransferEvent
 
+export enum Chain {
+  Celo = 'Celo',
+  Ethereum = 'Ethereum',
+}
+
 // A type containing all transaction provider-specific Transaction representations
-// e.g., Blockscout, Alchemy
-export type Transaction = BlockscoutTransaction
+export type Transaction = BlockscoutTransaction | AlchemyTransaction

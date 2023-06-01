@@ -132,6 +132,11 @@ export default `type ExchangeRate {
     SWAP_TRANSACTION
   }
 
+  enum Chain {
+    Celo
+    Ethereum
+  }
+
   type FeeV2 {
     type: FeeType!
     amount: TokenAmount!
@@ -257,6 +262,7 @@ export default `type ExchangeRate {
       tokens: [Address]
       localCurrencyCode: String
       afterCursor: String
+      chain: Chain
     ): TokenTransactionsV2
 
     tokenTransactions(
