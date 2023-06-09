@@ -97,7 +97,9 @@ export class EventBuilder {
         : (transfer: { toAddressHash: string | null }) =>
             transfer.toAddressHash === address
 
-    const filteredTransfers = transaction.transfers.filter(filterFn)
+    const filteredTransfers = transaction.transfers
+      .filter(filterFn)
+      .filter((transfer) => transfer.tokenAddress && transfer.tokenId)
 
     const nfts = await asyncPool(
       5,

@@ -159,6 +159,7 @@ export interface BlockscoutTokenTransfer {
   tokenAddress: string
   value: string
   tokenType: string
+  tokenId: string
 }
 
 export interface BlockscoutTransferTx {
