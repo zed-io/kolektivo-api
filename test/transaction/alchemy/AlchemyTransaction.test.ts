@@ -1,110 +1,32 @@
+import { AssetTransfersWithMetadataResult } from 'alchemy-sdk'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  AssetTransfersWithMetadataResult,
-  AssetTransfersCategory,
-  TransactionReceipt,
-  BigNumber,
-} from 'alchemy-sdk'
+  mockErc20Transfer,
+  mockNftTransfer,
+  mockTxReceipt,
+} from '../../mock-data/alchemy'
 
 const mockTransfersTo: AssetTransfersWithMetadataResult[] = [
   {
-    metadata: { blockTimestamp: 'some-timestamp' },
+    ...mockErc20Transfer,
     uniqueId: 'some-id-1',
-    category: AssetTransfersCategory.ERC20,
-    blockNum: '0',
-    from: 'from-address',
-    to: 'to-address',
-    value: 100,
-    erc721TokenId: null,
-    erc1155Metadata: null,
-    tokenId: 'token-id',
-    asset: 'asset-name',
-    hash: 'correct-hash',
-    rawContract: {
-      value: '10',
-      address: 'contract-address',
-      decimal: '18',
-    },
   },
   {
-    metadata: { blockTimestamp: 'some-timestamp' },
+    ...mockNftTransfer,
     uniqueId: 'some-id-2',
-    category: AssetTransfersCategory.ERC721,
-    blockNum: '0',
-    from: 'from-address',
-    to: 'to-address',
-    value: 100,
-    erc721TokenId: null,
-    erc1155Metadata: null,
-    tokenId: 'token-id',
-    asset: 'asset-name',
-    hash: 'correct-hash',
-    rawContract: {
-      value: '10',
-      address: 'contract-address',
-      decimal: '18',
-    },
   },
 ]
 
 const mockTransfersFrom: AssetTransfersWithMetadataResult[] = [
   {
-    metadata: { blockTimestamp: 'some-timestamp' },
+    ...mockErc20Transfer,
     uniqueId: 'some-id-3',
-    category: AssetTransfersCategory.ERC20,
-    blockNum: '0',
-    from: 'from-address',
-    to: 'to-address',
-    value: 100,
-    erc721TokenId: null,
-    erc1155Metadata: null,
-    tokenId: 'token-id',
-    asset: 'asset-name',
-    hash: 'correct-hash',
-    rawContract: {
-      value: '10',
-      address: 'contract-address',
-      decimal: '18',
-    },
   },
   {
-    metadata: { blockTimestamp: 'some-timestamp' },
+    ...mockNftTransfer,
     uniqueId: 'some-id-4',
-    category: AssetTransfersCategory.ERC721,
-    blockNum: '0',
-    from: 'from-address',
-    to: 'to-address',
-    value: 100,
-    erc721TokenId: null,
-    erc1155Metadata: null,
-    tokenId: 'token-id',
-    asset: 'asset-name',
-    hash: 'correct-hash',
-    rawContract: {
-      value: '10',
-      address: 'contract-address',
-      decimal: '18',
-    },
   },
 ]
-
-const mockTxReceipt: TransactionReceipt = {
-  to: 'to-address',
-  from: 'from-address',
-  contractAddress: 'contract-address',
-  transactionIndex: 0,
-  gasUsed: BigNumber.from(0),
-  logsBloom: 'logs-bloom',
-  blockHash: 'block-hash',
-  transactionHash: 'correct-hash',
-  logs: [],
-  blockNumber: 0,
-  confirmations: 100,
-  cumulativeGasUsed: BigNumber.from(0),
-  effectiveGasPrice: BigNumber.from(0),
-  byzantium: false,
-  type: 0,
-}
 
 describe('AlchemyTransaction', () => {
   let mockTransaction: AlchemyTransaction

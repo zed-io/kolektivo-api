@@ -38,7 +38,7 @@ export abstract class BaseDataSource<
       address,
       afterCursor,
     )
-    const classifiedTxs = this.classifyTxs(transactions, valoraVersion)
+    const classifiedTxs = this.classifyTxs(address, transactions, valoraVersion)
     const serializedTxs = this.serializeTxs(classifiedTxs)
     return {
       transactions: serializedTxs,
@@ -63,6 +63,7 @@ export abstract class BaseDataSource<
    * Valora version to aid in filtering unsupported transaction types.
    */
   abstract classifyTxs(
+    address: string,
     txs: T[],
     valoraVersion?: string,
   ): ClassifiedTransaction<T, S>[]
