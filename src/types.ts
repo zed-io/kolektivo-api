@@ -57,8 +57,8 @@ export interface TokenTransferV2 extends TokenTransactionV2 {
   address: string
   account: string
   transactionHash: string
-  fees?: FeeV2[]
-  metadata?: TokenTransferMetadata
+  fees: FeeV2[]
+  metadata: TokenTransferMetadata
 }
 
 export interface NftTransferV2 extends TokenTransactionV2 {
@@ -77,7 +77,7 @@ export interface TokenExchangeV2 extends TokenTransactionV2 {
   inAmount: TokenAmount
   outAmount: TokenAmount
   transactionHash: string
-  fees?: FeeV2[]
+  fees: FeeV2[]
   metadata?: TokenExchangeMetadata
 }
 

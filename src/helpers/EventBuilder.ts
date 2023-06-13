@@ -65,9 +65,9 @@ export class EventBuilder {
         title: name,
         image: imageUrl,
       },
-      ...(fees && {
-        fees: await EventBuilder.formatFees(fees, transaction.timestamp),
-      }),
+      fees: fees
+        ? await EventBuilder.formatFees(fees, transaction.timestamp)
+        : [],
     }
   }
 
@@ -159,9 +159,9 @@ export class EventBuilder {
         tokenAddress: outTransfer.tokenAddress,
         timestamp,
       },
-      ...(fees && {
-        fees: await EventBuilder.formatFees(fees, transaction.timestamp),
-      }),
+      fees: fees
+        ? await EventBuilder.formatFees(fees, transaction.timestamp)
+        : [],
     }
   }
 

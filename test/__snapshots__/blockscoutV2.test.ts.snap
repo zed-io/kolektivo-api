@@ -187,6 +187,7 @@ Array [
       "value": "10000000",
     },
     "block": "117453",
+    "fees": Array [],
     "metadata": Object {
       "comment": "",
       "image": "Test Image",
@@ -269,6 +270,7 @@ Array [
       "value": "10",
     },
     "block": "117451",
+    "fees": Array [],
     "metadata": Object {
       "comment": "",
       "image": "Test Image",
@@ -287,6 +289,7 @@ Array [
       "value": "5",
     },
     "block": "117451",
+    "fees": Array [],
     "metadata": Object {
       "comment": "",
       "image": undefined,
@@ -333,6 +336,7 @@ Array [
       "value": "20000000",
     },
     "block": "6203333",
+    "fees": Array [],
     "metadata": Object {
       "comment": "",
       "image": undefined,
