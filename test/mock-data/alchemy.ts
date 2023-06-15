@@ -7,22 +7,22 @@ import {
 import { AlchemyTransaction } from '../../src/transaction/alchemy/AlchemyTransaction'
 
 export const mockErc20Transfer: AssetTransfersWithMetadataResult = {
-  metadata: { blockTimestamp: 'some-timestamp' },
+  metadata: { blockTimestamp: '2022-12-07T23:49:35.000Z' },
   uniqueId: 'some-id-1',
   category: AssetTransfersCategory.ERC20,
   blockNum: '0',
   from: 'from-address',
   to: 'to-address',
-  value: 100,
+  value: 1.233468,
   erc721TokenId: null,
   erc1155Metadata: null,
   tokenId: 'token-id',
   asset: 'asset-name',
   hash: 'correct-hash',
   rawContract: {
-    value: '10',
-    address: 'contract-address',
-    decimal: '18',
+    value: '0x12d23c',
+    address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    decimal: '0x6',
   },
 }
 

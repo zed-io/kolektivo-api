@@ -8,6 +8,7 @@ import {
   mockTokenSwapTx,
   mockTxReceipt,
 } from '../../mock-data/alchemy'
+import knownAddressesCache from '../../../src/helpers/KnownAddressesCache'
 
 describe('TokenReceived', () => {
   const tokenReceived = new TokenReceived({ userAddress: 'some-address' })
@@ -33,6 +34,54 @@ describe('TokenReceived', () => {
 
     it('returns false for tx with both erc 20 transfers from and to', () => {
       expect(tokenReceived.matches(mockTokenSwapTx)).toEqual(false)
+    })
+  })
+
+  describe('getEvent', () => {
+    it.each([
+      { value: null },
+      {
+        rawContract: {
+          address: null,
+          value: '0x123',
+          decimal: '0x18',
+        },
+      },
+      { to: null },
+    ])('throws when required field is missing', async (partialTransferTo) => {
+      await expect(() =>
+        tokenReceived.getEvent(
+          new AlchemyTransaction({
+            transfersFrom: [],
+            transfersTo: [{ ...mockErc20Transfer, ...partialTransferTo }],
+            txReceipt: mockTxReceipt,
+          }),
+        ),
+      ).rejects.toThrowError()
+    })
+    it('correctly maps AlchemyTransaction to TokenTransferV2', async () => {
+      knownAddressesCache.getDisplayInfoFor = jest.fn().mockReturnValue({
+        name: 'sender-name',
+        imageUrl: 'sender-image-url',
+      })
+      expect(await tokenReceived.getEvent(mockTokenReceivedTx)).toEqual({
+        type: 'RECEIVED',
+        timestamp: 1670456975000,
+        transactionHash: 'correct-hash',
+        block: '0',
+        amount: {
+          value: 1.233468,
+          tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+          timestamp: 1670456975000,
+        },
+        address: 'to-address',
+        account: 'to-address',
+        fees: [],
+        metadata: {
+          title: 'sender-name',
+          image: 'sender-image-url',
+        },
+      })
     })
   })
 })
