@@ -36,8 +36,8 @@ export class TokenReceived extends TransactionType<AlchemyTransaction> {
       timestamp,
       block,
       transactionHash,
-      address: toAddress,
-      account: toAddress,
+      address: fromAddress,
+      account: fromAddress,
       amount: {
         value, // according to Alchemy docs this is already in units of Eth, not Wei. https://docs.alchemy.com/reference/sdk-getassettransfers#assettransfersresponse-response-object-parameters
         tokenAddress,
