@@ -62,26 +62,26 @@ describe('BlockscoutJsonAPI', () => {
     )
 
     expect(result).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "balance": "2871713969586",
           "decimals": "10",
           "symbol": "TT",
           "tokenAddress": "0x048f47d358ec521a6cf384461d674750a3cb58c8",
         },
-        Object {
+        {
           "balance": "2947248590163445104",
           "decimals": "18",
           "symbol": "cEUR",
           "tokenAddress": "0x10c892a6ec43a53e45d0b916b4b7d383b1b78c0f",
         },
-        Object {
+        {
           "balance": "0",
           "decimals": "18",
           "symbol": "cUSD",
           "tokenAddress": "0x874069fa1eb16d44d622f2e0ca25eea172369bc1",
         },
-        Object {
+        {
           "balance": "4646922697027429935",
           "decimals": "18",
           "symbol": "CELO",
