@@ -56,3 +56,6 @@ export const STAKED_CELO_MANAGER_ADDRESS = (
 ).toLowerCase()
 
 export const GET_NFT_API_URL = process.env.GET_NFT_API_URL
+
+export const FETCH_BALANCES_VIA_BLOCKSCOUT =
+  process.env.FETCH_BALANCES_VIA_BLOCKSCOUT === 'true'

@@ -16,6 +16,7 @@ import {
   TokenTransactionResult,
   Chain,
 } from './types'
+import { FETCH_BALANCES_VIA_BLOCKSCOUT } from './config'
 
 export interface Context {
   valoraVersion: string | undefined
@@ -129,7 +130,14 @@ export const resolvers = {
       { dataSources }: Context,
     ): Promise<UserTokenBalances> => {
       try {
-        const balances = await dataSources.blockscoutJsonAPI.fetchUserBalances(
+        // TODO: remove this once we're confident in the new implementation
+        if (FETCH_BALANCES_VIA_BLOCKSCOUT) {
+          const balances =
+            await dataSources.blockscoutJsonAPI.fetchUserBalances(args.address)
+          return { balances }
+        }
+
+        const balances = await dataSources.blockchain.fetchUserBalances(
           args.address,
         )
         return { balances }

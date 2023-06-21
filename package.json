@@ -51,6 +51,7 @@
     "prom-client": "^14.0.1",
     "tiny-async-pool": "^1.2.0",
     "utf8": "^3.0.0",
+    "viem": "^1.0.7",
     "web3": "1.6.1",
     "web3-eth-abi": "1.6.1",
     "yargs": "^17.5.1"

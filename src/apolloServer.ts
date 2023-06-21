@@ -9,6 +9,7 @@ import typeDefs from './schema'
 import { getValoraVersionFromUserAgent } from './utils'
 import { AlchemyDataSource } from './datasource/alchemy/AlchemyDataSource'
 import { Chain } from './types'
+import { BlockchainDataSource } from './blockchain'
 
 export interface DataSources {
   blockscoutAPI: BlockscoutAPI
@@ -16,6 +17,7 @@ export interface DataSources {
   currencyConversionAPI: CurrencyConversionAPI
   pricesService: PricesService
   ethereumDataSource: AlchemyDataSource
+  blockchain: BlockchainDataSource
 }
 
 export function initApolloServer({
@@ -35,6 +37,7 @@ export function initApolloServer({
         currencyConversionAPI,
         pricesService,
         ethereumDataSource: new AlchemyDataSource(Chain.Ethereum),
+        blockchain: new BlockchainDataSource(),
       }
     },
     context: ({ req }) => ({

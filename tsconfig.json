@@ -15,8 +15,8 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
-    "lib": ["es7", "es2017"]
+    "target": "es2021",
+    "lib": ["es2021"]
   },
   "include": ["src/**/*", "index.d.ts"],
   "exclude": ["node_modules"]
