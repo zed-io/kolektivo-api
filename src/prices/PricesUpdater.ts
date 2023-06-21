@@ -86,11 +86,11 @@ async function updateLastDayPrices(
             at: lastDay.getTime(),
           },
         )
-      } catch (error) {
+      } catch (err) {
         logger.warn({
           type: 'ERROR_UPDATING_LAST_DAY_PRICE',
           tokenAddress,
-          error,
+          err,
         })
       }
     },
@@ -122,10 +122,10 @@ export async function storeHistoricalPrices({
 
   await db('historical_token_prices')
     .insert(batchInsertItems)
-    .catch((error) => {
+    .catch((err) => {
       logger.error({
         type: 'ERROR_INSERTING_TOKEN_PRICES',
-        error,
+        err,
       })
     })
 

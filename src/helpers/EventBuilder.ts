@@ -107,10 +107,10 @@ export class EventBuilder {
       async ({ tokenAddress, tokenId }: any) => {
         try {
           return await EventBuilder.getNft(tokenAddress, tokenId)
-        } catch (error) {
+        } catch (err) {
           logger.error({
             message: `Error fetching NFT ${tokenAddress}:${tokenId}`,
-            error,
+            err,
           })
         }
       },
@@ -201,12 +201,12 @@ export class EventBuilder {
         metadata,
         media,
       }
-    } catch (error) {
+    } catch (err) {
       logger.warn({
         msg: `Error: Could not get Nft details - contractAddress: '${contractAddress}' tokenId: '${tokenId}'`,
-        error,
+        err,
       })
-      throw error
+      throw err
     }
   }
 }

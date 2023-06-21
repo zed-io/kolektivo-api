@@ -54,15 +54,15 @@ export const resolvers = {
             throw new Error(`Unknown chain parameter: ${chain}`)
           }
         }
-      } catch (error) {
+      } catch (err) {
         logger.error({
           type: 'ERROR_FETCHING_TOKEN_TRANSACTIONS_V2',
           address: args.address,
           localCurrency: args.localCurrencyCode,
           chain,
-          error,
+          err,
         })
-        throw error
+        throw err
       }
     },
     // Deprecated
@@ -92,14 +92,14 @@ export const resolvers = {
             lastCursor: 'TODO',
           },
         }
-      } catch (error) {
+      } catch (err) {
         logger.error({
           type: 'ERROR_FETCHING_TOKEN_TRANSACTIONS',
           address: args.address,
           localCurrency: args.localCurrencyCode,
-          error,
+          err,
         })
-        throw error
+        throw err
       }
     },
     currencyConversion: async (
@@ -115,10 +115,10 @@ export const resolvers = {
           sourceCurrencyCode: args.sourceCurrencyCode ?? USD,
         })
         return { rate: rate.toNumber() }
-      } catch (error) {
+      } catch (err) {
         logger.error({
           ...args,
-          error,
+          err,
           type: 'CURRENCY_CONVERSION_ERROR',
         })
         return null
@@ -141,13 +141,13 @@ export const resolvers = {
           args.address,
         )
         return { balances }
-      } catch (error) {
+      } catch (err) {
         logger.error({
           type: 'ERROR_FETCHING_BALANCES',
           address: args.address,
-          error,
+          err,
         })
-        throw error
+        throw err
       }
     },
   },
@@ -210,10 +210,10 @@ export const resolvers = {
             currencyCode: localCurrencyCode,
             exchangeRate: rate.toString(),
           }
-        } catch (error) {
+        } catch (err) {
           logger.warn({
             type: 'ERROR_FETCHING_TOKEN_LOCAL_AMOUNT',
-            error,
+            err,
           })
           return null
         }
@@ -239,10 +239,10 @@ export const resolvers = {
           currencyCode: localCurrencyCode || 'USD',
           exchangeRate: rate.toString(),
         }
-      } catch (error) {
+      } catch (err) {
         logger.warn({
           type: 'ERROR_FETCHING_LOCAL_AMOUNT',
-          error,
+          err,
         })
         return null
       }

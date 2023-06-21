@@ -13,19 +13,19 @@ export function getFirebaseAdminCreds(admin: any) {
     try {
       const serviceAccount = require('../serviceAccountKey.json')
       return admin.credential.cert(serviceAccount)
-    } catch (error) {
+    } catch (err) {
       logger.error({
         msg: 'Error: Could not initialize admin credentials. Is serviceAccountKey.json missing?',
-        error,
+        err,
       })
     }
   } else {
     try {
       return admin.credential.applicationDefault()
-    } catch (error) {
+    } catch (err) {
       logger.error({
         msg: 'Error: Could not retrieve default app creds',
-        error,
+        err,
       })
     }
   }

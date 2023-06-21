@@ -196,11 +196,11 @@ export class BlockscoutAPI extends RESTDataSource {
         aggregatedTransactions.map(async ({ transaction, transactionType }) => {
           try {
             return await transactionType.getEvent(transaction)
-          } catch (error) {
+          } catch (err) {
             logger.warn({
               type: 'ERROR_MAPPING_TO_EVENT_V2',
               transaction: JSON.stringify(transaction),
-              error,
+              err,
             })
           }
         }),
@@ -438,11 +438,11 @@ export class BlockscoutAPI extends RESTDataSource {
       .map(({ transaction, type }) => {
         try {
           return type.getEvent(transaction)
-        } catch (error) {
+        } catch (err) {
           logger.warn({
             type: 'ERROR_MAPPING_TO_EVENT',
             transaction: JSON.stringify(transaction),
-            error,
+            err,
           })
         }
       })
@@ -471,10 +471,10 @@ export class BlockscoutAPI extends RESTDataSource {
               moneyAmount: event.takerAmount as MoneyAmount,
               localCurrencyCode,
             })
-          } catch (error) {
+          } catch (err) {
             logger.warn({
               type: 'ERROR_FETCHING_EXCHANGE_LOCAL_AMOUNT',
-              error,
+              err,
             })
             return null
           }

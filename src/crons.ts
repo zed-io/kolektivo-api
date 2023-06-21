@@ -26,10 +26,10 @@ function addEndpoint(
     try {
       await asyncFn()
       res.status(204).send()
-    } catch (error) {
+    } catch (err) {
       logger.error({
         type: errorType,
-        error,
+        err,
       })
       res.status(500).send()
     }

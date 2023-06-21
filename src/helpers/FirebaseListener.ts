@@ -8,10 +8,10 @@ export function listenFromFirebase<T>(
   path: string,
   callback: (value: T) => void,
 ): void {
-  const onError = (error: Error) => {
+  const onError = (err: Error) => {
     logger.error({
       type: 'ERROR_LISTENING_TO_FIREBASE',
-      error: error.message,
+      err,
     })
   }
 

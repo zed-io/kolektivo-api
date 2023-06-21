@@ -180,12 +180,12 @@ async function main() {
 
   app.use(
     (
-      error: Error,
+      err: Error,
       _req: express.Request,
       res: express.Response,
       _next: express.NextFunction,
     ) => {
-      logger.error({ type: 'UNEXPECTED_ERROR', error })
+      logger.error({ type: 'UNEXPECTED_ERROR', err })
       res.statusCode = 500
       if (sentryEnabled) {
         res.end((res as any).sentry + '\n')
@@ -199,10 +199,10 @@ async function main() {
   })
 }
 
-main().catch((error) => {
+main().catch((err) => {
   logger.error({
     type: 'STARTUP',
-    error,
+    err,
   })
   process.exit(1)
 })

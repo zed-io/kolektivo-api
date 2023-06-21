@@ -54,15 +54,15 @@ export default class PricesService<TContext = any> extends DataSource {
         throw new Error('Failed to calculate local currency price')
       }
       return cUSDPrice.times(usdToLocalCurrencyPrice)
-    } catch (error) {
+    } catch (err) {
       logger.warn({
         type: 'ERROR_CALCULATE_LOCAL_CURRENCY_PRICE',
         tokenAddress,
         localCurrency,
         date,
-        error,
+        err,
       })
-      throw error
+      throw err
     }
   }
 

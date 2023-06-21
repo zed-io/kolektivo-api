@@ -31,10 +31,10 @@ export class Input {
 
     try {
       return coder.decodeParameters(abi, this.data)
-    } catch (error) {
+    } catch (err) {
       logger.warn({
         type: 'INPUT_DECODE_ERROR',
-        error,
+        err,
       })
       return
     }

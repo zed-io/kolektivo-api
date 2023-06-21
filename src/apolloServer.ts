@@ -43,12 +43,12 @@ export function initApolloServer({
     context: ({ req }) => ({
       valoraVersion: getValoraVersionFromUserAgent(req.header('user-agent')),
     }),
-    formatError: (error) => {
+    formatError: (err) => {
       logger.error({
         type: 'UNHANDLED_ERROR',
-        error: error,
+        err,
       })
-      return error
+      return err
     },
   })
 }
