@@ -86,4 +86,10 @@ export class AlchemyTransaction {
       ERC20_TRANSFER_CATEGORIES.includes(t.category),
     )
   }
+
+  getBlockNum(): string {
+    return parseInt(
+      this.transfersFrom.concat(this.transfersTo)[0].blockNum,
+    ).toString()
+  }
 }

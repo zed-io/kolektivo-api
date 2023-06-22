@@ -102,4 +102,9 @@ describe('AlchemyTransaction', () => {
       ])
     })
   })
+  describe('getBlockNum', () => {
+    it('gets a decimal block number', () => {
+      expect(mockTransaction.getBlockNum()).toEqual('15')
+    })
+  })
 })

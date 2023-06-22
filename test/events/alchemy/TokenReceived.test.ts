@@ -68,7 +68,7 @@ describe('TokenReceived', () => {
         type: 'RECEIVED',
         timestamp: 1670456975000,
         transactionHash: 'correct-hash',
-        block: '0',
+        block: '15',
         amount: {
           value: 1.233468,
           tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',

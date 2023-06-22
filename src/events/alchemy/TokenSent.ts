@@ -15,7 +15,6 @@ export class TokenSent extends TransactionType<AlchemyTransaction> {
     const [
       {
         metadata: { blockTimestamp },
-        blockNum: block,
         hash: transactionHash,
         value,
         rawContract: { address: tokenAddress },
@@ -34,7 +33,7 @@ export class TokenSent extends TransactionType<AlchemyTransaction> {
     return {
       type: TokenTransactionTypeV2.SENT,
       timestamp,
-      block,
+      block: transaction.getBlockNum(),
       transactionHash,
       address: toAddress,
       account: toAddress,
