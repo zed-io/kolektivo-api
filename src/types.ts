@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { BlockscoutTransaction } from './transaction/blockscout/BlockscoutTransaction'
 import { AlchemyTransaction } from './transaction/alchemy/AlchemyTransaction'
+import { Network } from 'alchemy-sdk'
 
 // Event types
 export enum TokenTransactionTypeV2 {
@@ -234,7 +235,7 @@ export interface TokenTransactionV2Args {
   // If present, this parameter is used as the 'after' parameter for blockscout calls.
   afterCursor?: string
   // If present, will fetch transactions from the specified chain, else will default to Celo
-  chain?: Chain
+  chain?: Chain | AlchemyChain
 }
 
 export interface TokenTransactionArgs {
@@ -275,5 +276,36 @@ export enum Chain {
   Ethereum = 'Ethereum',
 }
 
+export enum AlchemyChain {
+  Ethereum = Chain.Ethereum,
+}
+
 // A type containing all transaction provider-specific Transaction representations
 export type Transaction = BlockscoutTransaction | AlchemyTransaction
+
+export enum DeployEnv {
+  Emulator = 'emulator',
+  E2E = 'e2e',
+  Local = 'local',
+  Mainnet = 'mainnet',
+  Testnet = 'testnet',
+}
+
+export interface Config {
+  port: number
+  deployEnv: DeployEnv
+  exchangesNetworkConfig: string
+  alchemyNetworkMap: Record<AlchemyChain, Network>
+  alchemyApiKeys: Record<AlchemyChain, string>
+  exchangeRateApiKey: string
+  db: {
+    host: string
+    database: string
+    user: string
+    password: string
+  }
+  sentry: {
+    dsn?: string
+    tracesSampleRate: number
+  }
+}

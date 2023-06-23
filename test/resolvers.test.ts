@@ -1,6 +1,8 @@
 import { resolvers, Context } from '../src/resolvers'
 import { DataSources } from '../src/apolloServer'
-import { TokenTransactionV2Args, Chain } from '../src/types'
+
+import { TokenTransactionV2Args, AlchemyChain, Chain } from '../src/types'
+
 import * as config from '../src/config'
 
 const mockConfig = config as { FETCH_BALANCES_VIA_BLOCKSCOUT: boolean }
@@ -9,9 +11,15 @@ describe('resolvers', () => {
   describe('tokenTransactionsV2', () => {
     let context: Context
     let args: TokenTransactionV2Args
+    let mockDataSourceMap: Record<AlchemyChain, any>
 
     beforeEach(() => {
       jest.resetAllMocks()
+      mockDataSourceMap = {
+        [AlchemyChain.Ethereum]: {
+          getTokenTxs: jest.fn().mockResolvedValue('ethereum'),
+        },
+      }
       context = {
         valoraVersion: '1.0.0',
         localCurrencyCode: 'USD',
@@ -19,8 +27,12 @@ describe('resolvers', () => {
           blockscoutAPI: {
             getTokenTransactionsV2: jest.fn().mockResolvedValue('celo'),
           },
-          ethereumDataSource: {
-            getTokenTxs: jest.fn().mockResolvedValue('ethereum'),
+          alchemyDataSourceManager: {
+            getDataSource: jest
+              .fn()
+              .mockImplementation(
+                (chain: AlchemyChain) => mockDataSourceMap[chain],
+              ),
           },
         } as unknown as DataSources,
       }
@@ -77,10 +89,10 @@ describe('resolvers', () => {
       )
       expect(result).toEqual('ethereum')
       expect(
-        context.dataSources.ethereumDataSource.getTokenTxs,
+        mockDataSourceMap[AlchemyChain.Ethereum].getTokenTxs,
       ).toHaveBeenCalledTimes(1)
       expect(
-        context.dataSources.ethereumDataSource.getTokenTxs,
+        mockDataSourceMap[AlchemyChain.Ethereum].getTokenTxs,
       ).toHaveBeenCalledWith(
         args.address,
         args.afterCursor,

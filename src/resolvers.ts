@@ -16,6 +16,7 @@ import {
   TokenTransactionResult,
   Chain,
 } from './types'
+import { isAlchemyChain } from './datasource/alchemy/AlchemyDataSource'
 import { FETCH_BALANCES_VIA_BLOCKSCOUT } from './config'
 
 export interface Context {
@@ -35,24 +36,18 @@ export const resolvers = {
       context.localCurrencyCode = args.localCurrencyCode
       const chain = args.chain ?? Chain.Celo
       try {
-        switch (chain) {
-          case Chain.Celo: {
-            return await dataSources.blockscoutAPI.getTokenTransactionsV2(
-              args.address,
-              args.afterCursor,
-              valoraVersion,
-            )
-          }
-          case Chain.Ethereum: {
-            return await dataSources.ethereumDataSource.getTokenTxs(
-              args.address,
-              args.afterCursor,
-              valoraVersion,
-            )
-          }
-          default: {
-            throw new Error(`Unknown chain parameter: ${chain}`)
-          }
+        if (isAlchemyChain(chain)) {
+          return await dataSources.alchemyDataSourceManager
+            .getDataSource(chain)
+            .getTokenTxs(args.address, args.afterCursor, valoraVersion)
+        } else if (chain === Chain.Celo) {
+          return await dataSources.blockscoutAPI.getTokenTransactionsV2(
+            args.address,
+            args.afterCursor,
+            valoraVersion,
+          )
+        } else {
+          throw new Error(`Unknown chain parameter: ${chain}`)
         }
       } catch (err) {
         logger.error({

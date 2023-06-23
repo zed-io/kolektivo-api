@@ -1,7 +1,8 @@
 import { TokenSwap } from '../../../src/events/alchemy'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  mockErc20Transfer,
+  mockErc20TransferTo,
+  mockErc20TransferFrom,
   mockNftSentTx,
   mockTokenReceivedTx,
   mockTokenSentTx,
@@ -19,8 +20,8 @@ describe('TokenSwap', () => {
 
     it('returns false for tx with multiple erc 20 transfers from and to', () => {
       const tx = new AlchemyTransaction({
-        transfersFrom: [mockErc20Transfer, mockErc20Transfer],
-        transfersTo: [mockErc20Transfer, mockErc20Transfer],
+        transfersFrom: [mockErc20TransferFrom, mockErc20TransferFrom],
+        transfersTo: [mockErc20TransferTo, mockErc20TransferTo],
         txReceipt: mockTxReceipt,
       })
       expect(tokenSwap.matches(tx)).toEqual(false)

@@ -1,29 +1,31 @@
 import { AssetTransfersWithMetadataResult } from 'alchemy-sdk'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  mockErc20Transfer,
-  mockNftTransfer,
+  mockErc20TransferTo,
+  mockErc20TransferFrom,
+  mockNftTransferTo,
+  mockNftTransferFrom,
   mockTxReceipt,
 } from '../../mock-data/alchemy'
 
 const mockTransfersTo: AssetTransfersWithMetadataResult[] = [
   {
-    ...mockErc20Transfer,
+    ...mockErc20TransferTo,
     uniqueId: 'some-id-1',
   },
   {
-    ...mockNftTransfer,
+    ...mockNftTransferTo,
     uniqueId: 'some-id-2',
   },
 ]
 
 const mockTransfersFrom: AssetTransfersWithMetadataResult[] = [
   {
-    ...mockErc20Transfer,
+    ...mockErc20TransferFrom,
     uniqueId: 'some-id-3',
   },
   {
-    ...mockNftTransfer,
+    ...mockNftTransferFrom,
     uniqueId: 'some-id-4',
   },
 ]

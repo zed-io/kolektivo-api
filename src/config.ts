@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
 import { logger } from './logger'
+import { Network } from 'alchemy-sdk'
+import { DeployEnv, AlchemyChain } from './types'
 
 // Load environment variables from .env file
 if (process.env.JEST_WORKER_ID) {
@@ -31,7 +33,29 @@ export function getFirebaseAdminCreds(admin: any) {
   }
 }
 
-export const DEPLOY_ENV = (process.env.DEPLOY_ENV as string).toLowerCase()
+export const ALCHEMY_ENV_NETWORK_MAP: Record<
+  DeployEnv,
+  Record<AlchemyChain, Network>
+> = {
+  [DeployEnv.Emulator]: {
+    [AlchemyChain.Ethereum]: Network.ETH_GOERLI,
+  },
+  [DeployEnv.E2E]: {
+    [AlchemyChain.Ethereum]: Network.ETH_GOERLI,
+  },
+  [DeployEnv.Local]: {
+    [AlchemyChain.Ethereum]: Network.ETH_GOERLI,
+  },
+  [DeployEnv.Mainnet]: {
+    [AlchemyChain.Ethereum]: Network.ETH_MAINNET,
+  },
+  [DeployEnv.Testnet]: {
+    [AlchemyChain.Ethereum]: Network.ETH_GOERLI,
+  },
+}
+export const DEPLOY_ENV = (
+  process.env.DEPLOY_ENV as string
+).toLowerCase() as DeployEnv
 export const EXCHANGE_RATES_API = (
   process.env.EXCHANGE_RATES_API as string
 ).toLowerCase()

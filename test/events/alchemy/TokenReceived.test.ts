@@ -1,7 +1,7 @@
 import { TokenReceived } from '../../../src/events/alchemy'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  mockErc20Transfer,
+  mockErc20TransferTo,
   mockNftReceivedTx,
   mockTokenReceivedTx,
   mockTokenSentTx,
@@ -21,7 +21,7 @@ describe('TokenReceived', () => {
     it('returns false for tx with multiple erc 20 transfers to', () => {
       const tx = new AlchemyTransaction({
         transfersFrom: [],
-        transfersTo: [mockErc20Transfer, mockErc20Transfer],
+        transfersTo: [mockErc20TransferTo, mockErc20TransferTo],
         txReceipt: mockTxReceipt,
       })
       expect(tokenReceived.matches(tx)).toEqual(false)
@@ -53,7 +53,7 @@ describe('TokenReceived', () => {
         tokenReceived.getEvent(
           new AlchemyTransaction({
             transfersFrom: [],
-            transfersTo: [{ ...mockErc20Transfer, ...partialTransferTo }],
+            transfersTo: [{ ...mockErc20TransferTo, ...partialTransferTo }],
             txReceipt: mockTxReceipt,
           }),
         ),
@@ -66,16 +66,17 @@ describe('TokenReceived', () => {
       })
       expect(await tokenReceived.getEvent(mockTokenReceivedTx)).toEqual({
         type: 'RECEIVED',
-        timestamp: 1670456975000,
-        transactionHash: 'correct-hash',
+        timestamp: 1686689604000,
+        transactionHash:
+          '0xf50609b7ea2122ed93c182a8339f9dd9b952c101e83c516a478db39f80c73c3e',
         block: '15',
         amount: {
-          value: 1.233468,
-          tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          timestamp: 1670456975000,
+          value: 0.27673935886568457,
+          tokenAddress: '0x178e141a0e3b34152f73ff610437a7bf9b83267a',
+          timestamp: 1686689604000,
         },
-        address: 'from-address',
-        account: 'from-address',
+        address: '0xe90d9a3e765a221bc1a697a1a3b0bb2e8e8c5e78',
+        account: '0xe90d9a3e765a221bc1a697a1a3b0bb2e8e8c5e78',
         fees: [],
         metadata: {
           title: 'sender-name',

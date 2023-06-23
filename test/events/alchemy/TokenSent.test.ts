@@ -1,7 +1,7 @@
 import { TokenSent } from '../../../src/events/alchemy'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  mockErc20Transfer,
+  mockErc20TransferFrom,
   mockNftSentTx,
   mockTokenReceivedTx,
   mockTokenSentTx,
@@ -20,7 +20,7 @@ describe('TokenSent', () => {
 
     it('returns false for tx with multiple erc 20 transfers from', () => {
       const tx = new AlchemyTransaction({
-        transfersFrom: [mockErc20Transfer, mockErc20Transfer],
+        transfersFrom: [mockErc20TransferFrom, mockErc20TransferFrom],
         transfersTo: [],
         txReceipt: mockTxReceipt,
       })
@@ -51,8 +51,10 @@ describe('TokenSent', () => {
       await expect(() =>
         tokenSent.getEvent(
           new AlchemyTransaction({
-            transfersFrom: [],
-            transfersTo: [{ ...mockErc20Transfer, ...partialTransferFrom }],
+            transfersFrom: [
+              { ...mockErc20TransferFrom, ...partialTransferFrom },
+            ],
+            transfersTo: [],
             txReceipt: mockTxReceipt,
           }),
         ),
@@ -65,16 +67,17 @@ describe('TokenSent', () => {
       })
       expect(await tokenSent.getEvent(mockTokenSentTx)).toEqual({
         type: 'SENT',
-        timestamp: 1670456975000,
-        transactionHash: 'correct-hash',
+        timestamp: 1686689604000,
+        transactionHash:
+          '0xf50609b7ea2122ed93c182a8339f9dd9b952c101e83c516a478db39f80c73c3e',
         block: '15',
         amount: {
-          value: 1.233468,
-          tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-          timestamp: 1670456975000,
+          value: 0.27673935886568457,
+          tokenAddress: '0x178e141a0e3b34152f73ff610437a7bf9b83267a',
+          timestamp: 1686689604000,
         },
-        address: 'to-address',
-        account: 'to-address',
+        address: '0xe90d9a3e765a221bc1a697a1a3b0bb2e8e8c5e78',
+        account: '0xe90d9a3e765a221bc1a697a1a3b0bb2e8e8c5e78',
         fees: [], // TODO add fees once wallet can handle fees paid in native currency https://linear.app/valora/issue/ACT-840/display-fees-correctly-when-paid-in-native-token
         metadata: {
           title: 'recipient-name',
@@ -82,7 +85,7 @@ describe('TokenSent', () => {
         },
       })
       expect(knownAddressesCache.getDisplayInfoFor).toHaveBeenCalledWith(
-        'to-address',
+        '0xe90d9a3e765a221bc1a697a1a3b0bb2e8e8c5e78',
       )
     })
   })

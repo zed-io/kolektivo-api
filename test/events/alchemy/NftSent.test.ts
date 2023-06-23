@@ -3,7 +3,8 @@ import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTran
 import {
   mockNftReceivedTx,
   mockNftSentTx,
-  mockNftTransfer,
+  mockNftTransferFrom,
+  mockNftTransferTo,
   mockTxReceipt,
 } from '../../mock-data/alchemy'
 
@@ -17,8 +18,8 @@ describe('NftSent', () => {
 
     it('returns true for tx with multiple nft transfers to', () => {
       const tx = new AlchemyTransaction({
-        transfersFrom: [mockNftTransfer, mockNftTransfer],
-        transfersTo: [mockNftTransfer],
+        transfersFrom: [mockNftTransferFrom, mockNftTransferFrom],
+        transfersTo: [mockNftTransferTo],
         txReceipt: mockTxReceipt,
       })
       expect(nftSent.matches(tx)).toEqual(true)

@@ -2,7 +2,7 @@ runtime: nodejs18
 service: blockchain-api
 env_variables:
   NODE_ENV: 'production'
-  DEPLOY_ENV: 'alfajores'
+  DEPLOY_ENV: 'testnet'
   EXCHANGE_RATES_API: 'https://api.apilayer.com/currency_data'
   BLOCKSCOUT_API: 'https://explorer.celo.org/alfajores'
   FIREBASE_PROJECT_ID: 'celo-mobile-alfajores'
@@ -11,7 +11,7 @@ env_variables:
   VERIFICATION_REWARDS_ADDRESS: '0xb4fdaf5f3cd313654aa357299ada901b1d2dd3b5'
   WEB3_PROVIDER_URL: 'https://alfajores-forno.celo-testnet.org'
   # Comma separated list of Secrets to load.
-  SECRET_NAMES: 'projects/1067724576910/secrets/blockchain-api/versions/latest,projects/1067724576910/secrets/blockchain-api-db/versions/latest'
+  SECRET_NAMES: 'projects/1067724576910/secrets/blockchain-api/versions/latest,projects/1067724576910/secrets/blockchain-api-db/versions/latest,projects/1067724576910/secrets/blockchain-api-alchemy/versions/latest'
   EXCHANGES_NETWORK_CONFIG: 'alfajores'
   CELO_TOKEN_ADDRESS: '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9'
   STAKED_CELO_TOKEN_ADDRESS: '0xD22E18556E43cb29D6d6172D4b33Fd2Edb629EF2'

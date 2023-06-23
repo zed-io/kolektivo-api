@@ -17,12 +17,15 @@ import knownAddressesCache from './helpers/KnownAddressesCache'
 import tokenInfoCache from './helpers/TokenInfoCache'
 import { logger } from './logger'
 import PricesService from './prices/PricesService'
+import { AlchemyDataSourceManager } from './datasource/alchemy/AlchemyDataSource'
+import { Config, AlchemyChain, DeployEnv } from './types'
+import { ALCHEMY_ENV_NETWORK_MAP } from './config'
 
 const metricsMiddleware = promBundle({ includeMethod: true, includePath: true })
 
 const GRAPHQL_PATH: string = '/'
 
-async function parseArgs() {
+async function parseArgs(): Promise<Config> {
   //
   // Load secrets from Secrets Manager and inject into process.env.
   //
@@ -31,7 +34,7 @@ async function parseArgs() {
     Object.assign(process.env, await loadSecret(secretName))
   }
 
-  const argv = yargs
+  const argv = await yargs
     .env('')
     .option('port', {
       description: 'Port to listen on',
@@ -41,6 +44,11 @@ async function parseArgs() {
     .option('exchanges-network-config', {
       description: 'Blockchain network config for exchanges',
       choices: Object.keys(exchangesConfigs),
+      type: 'string',
+      demandOption: true,
+    })
+    .option('alchemy-ethereum-api-key', {
+      description: 'Ethereum API key for Alchemy',
       type: 'string',
       demandOption: true,
     })
@@ -82,30 +90,55 @@ async function parseArgs() {
       type: 'number',
       default: 1.0,
     })
+    .option('deploy-env', {
+      description: 'Deploy environment',
+      choices: Object.values(DeployEnv),
+      demandOption: true,
+    })
     .epilogue(
       'Always specify arguments as environment variables. Not all arguments are supported as CLI ones yet.',
     ).argv
 
-  return argv
+  const deployEnv = argv['deploy-env']
+  return {
+    port: argv.port,
+    deployEnv,
+    exchangesNetworkConfig: argv['exchanges-network-config'],
+    alchemyApiKeys: {
+      [AlchemyChain.Ethereum]: argv['alchemy-ethereum-api-key'],
+    },
+    alchemyNetworkMap: ALCHEMY_ENV_NETWORK_MAP[deployEnv],
+    exchangeRateApiKey: argv['exchange-rates-api-access-key'],
+    db: {
+      host: argv['blockchain-db-host'],
+      database: argv['blockchain-db-database'],
+      user: argv['blockchain-db-user'],
+      password: argv['blockchain-db-pass'],
+    },
+    sentry: {
+      dsn: argv['sentry-dsn'],
+      tracesSampleRate: argv['sentr-traces-sample-rate'] as number,
+    },
+  }
 }
 
 async function main() {
-  const args = await parseArgs()
+  const config = await parseArgs()
   const app = express()
 
   // The Sentry documentation recommends initializing as early in your app as
   // possible.
-  const sentryEnabled = !!args['sentry-dsn']
+  const sentryEnabled = !!config.sentry.dsn
   if (sentryEnabled) {
     Sentry.init({
-      dsn: args['sentry-dsn'],
+      dsn: config.sentry.dsn,
       integrations: [
         // enable HTTP calls tracing
         new Sentry.Integrations.Http({ tracing: true }),
         // enable Express.js middleware tracing
         new Tracing.Integrations.Express({ app }),
       ],
-      tracesSampleRate: args['sentry-traces-sample-rate'],
+      tracesSampleRate: config.sentry.tracesSampleRate,
     })
 
     app.use(Sentry.Handlers.requestHandler())
@@ -114,15 +147,10 @@ async function main() {
 
   const db = await initDatabase({
     client: 'pg',
-    connection: {
-      host: args['blockchain-db-host'],
-      database: args['blockchain-db-database'],
-      user: args['blockchain-db-user'],
-      password: args['blockchain-db-pass'],
-    },
+    connection: config.db,
   })
 
-  const network = args['exchanges-network-config']
+  const network = config.exchangesNetworkConfig
   let exchangeRateConfig = exchangesConfigs[network]
   if (network === 'mainnet') {
     exchangeRateConfig = {
@@ -140,7 +168,7 @@ async function main() {
   tokenInfoCache.startListening()
 
   const exchangeRateAPI = new ExchangeRateAPI({
-    exchangeRatesAPIAccessKey: args['exchange-rates-api-access-key'],
+    exchangeRatesAPIAccessKey: config.exchangeRateApiKey,
   })
   const currencyConversionAPI = new CurrencyConversionAPI({ exchangeRateAPI })
   const pricesService = new PricesService(
@@ -165,9 +193,14 @@ async function main() {
 
   app.use('/cron', cronRouter({ db, pricesService, exchangeRateManager }))
 
+  const alchemyDataSourceManager = new AlchemyDataSourceManager({
+    alchemyNetworkMap: config.alchemyNetworkMap,
+    alchemyApiKeys: config.alchemyApiKeys,
+  })
   const apolloServer = initApolloServer({
     currencyConversionAPI,
     pricesService,
+    alchemyDataSourceManager,
   })
   await apolloServer.start()
   apolloServer.applyMiddleware({ app, path: GRAPHQL_PATH })
@@ -193,8 +226,8 @@ async function main() {
     },
   )
 
-  app.listen(args.port, () => {
-    logger.info(`Listening on port ${args.port}`)
+  app.listen(config.port, () => {
+    logger.info(`Listening on port ${config.port}`)
     logger.info(`GraphQL path ${apolloServer.graphqlPath}`)
   })
 }

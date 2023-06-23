@@ -7,8 +7,7 @@ import PricesService from './prices/PricesService'
 import { resolvers } from './resolvers'
 import typeDefs from './schema'
 import { getValoraVersionFromUserAgent } from './utils'
-import { AlchemyDataSource } from './datasource/alchemy/AlchemyDataSource'
-import { Chain } from './types'
+import { AlchemyDataSourceManager } from './datasource/alchemy/AlchemyDataSource'
 import { BlockchainDataSource } from './blockchain'
 
 export interface DataSources {
@@ -16,16 +15,18 @@ export interface DataSources {
   blockscoutJsonAPI: BlockscoutJsonAPI
   currencyConversionAPI: CurrencyConversionAPI
   pricesService: PricesService
-  ethereumDataSource: AlchemyDataSource
+  alchemyDataSourceManager: AlchemyDataSourceManager
   blockchain: BlockchainDataSource
 }
 
 export function initApolloServer({
   currencyConversionAPI,
   pricesService,
+  alchemyDataSourceManager,
 }: {
   currencyConversionAPI: CurrencyConversionAPI
   pricesService: PricesService
+  alchemyDataSourceManager: AlchemyDataSourceManager
 }) {
   return new ApolloServer({
     typeDefs,
@@ -36,7 +37,7 @@ export function initApolloServer({
         blockscoutJsonAPI: new BlockscoutJsonAPI(),
         currencyConversionAPI,
         pricesService,
-        ethereumDataSource: new AlchemyDataSource(Chain.Ethereum),
+        alchemyDataSourceManager,
         blockchain: new BlockchainDataSource(),
       }
     },

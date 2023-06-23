@@ -109,3 +109,16 @@ You also need a service account for the Firebase connection. You can create one 
 
 Changes that are merged to the main branch are automatically deployed to
 Alfajores and Mainnet.
+
+## Adding a new blockchain
+
+We currently use Alchemy to fetch data for non-Celo blockchains. In order to add support for a new blockchain, the following
+must be performed:
+
+* Create new projects in Alchemy for testnet and mainnet on the desired chain.
+* Add the API keys to `blockchain-api-alchemy` in the `celo-mobile-mainnet` and `celo-mobile-alfajores` Google Cloud projects.
+* Update the `Chain` and `AlchemyChain` enums in `src/types.ts` to include the new chain. Update `Chain` in `src/schema.ts`
+* Update the `ALCHEMY_ENV_NETWORK_MAP` in `src/config.ts` to include the correct mainnet/testnet Alchemy networks per deploy env.
+* Update the `parseArgs` function in `src/index.ts` to accept the API key as an argument, and return the new key in the `alchemyApiKeys` object in the returned config object.
+
+This is all that should be necessary in order to get blockchain-api working with a new Alchemy-supported chain.
