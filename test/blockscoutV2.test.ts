@@ -88,7 +88,7 @@ jest.mock('../src/helpers/TokenInfoCache.ts', () => ({
       },
     }[symbol]
   },
-  getTokensAddresses: () =>
+  getTokenAddresses: () =>
     [TEST_GOLD_ADDRESS, TEST_DOLLAR_ADDRESS].map((address) =>
       address.toLowerCase(),
     ),

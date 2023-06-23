@@ -250,7 +250,7 @@ export class BlockscoutAPI extends RESTDataSource {
       },
     )
 
-    const supportedTokens = new Set(tokenInfoCache.getTokensAddresses())
+    const supportedTokens = new Set(tokenInfoCache.getTokenAddresses())
 
     const filteredUnknownTokens = transactions.filter(
       (tx: BlockscoutTransaction) => {

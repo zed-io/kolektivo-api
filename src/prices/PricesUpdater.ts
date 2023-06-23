@@ -8,6 +8,8 @@ import PricesService from './PricesService'
 import asyncPool from 'tiny-async-pool'
 import { CELO_TOKEN_ADDRESS, STAKED_CELO_TOKEN_ADDRESS } from '../config'
 import { getStakedCeloPriceInCelo } from './StakedCelo'
+import { fetchPricesOrEmpty } from './coingecko'
+import { Chain } from '../types'
 
 const FIREBASE_NODE_KEY = '/tokensInfo'
 const MAX_CONCURRENCY = 30
@@ -30,10 +32,9 @@ export async function updateCurrentPrices({
   exchangeRateManager: ExchangeRateManager
 }) {
   logger.info('Updating current prices in firebase')
-
   const fetchTime = Date.now()
-  const prices = await calculatePrices(exchangeRateManager)
-  const tokenAddresses = tokenInfoCache.getTokensAddresses()
+  const tokenAddresses = tokenInfoCache.getTokenAddresses()
+  const prices = await calculateCUsdPrices(exchangeRateManager, tokenAddresses)
 
   const updateObject = tokenAddresses.reduce(
     (result: any, tokenAddress: string) => {
@@ -59,7 +60,7 @@ export async function updateHistoricalPrices({
   pricesService: PricesService
 }) {
   logger.info('Updating historical prices in firebase')
-  const tokenAddresses = tokenInfoCache.getTokensAddresses()
+  const tokenAddresses = tokenInfoCache.getTokenAddresses()
 
   await updateLastDayPrices(pricesService, tokenAddresses)
   logger.info('Updated historical prices in firebase')
@@ -107,7 +108,8 @@ export async function storeHistoricalPrices({
   logger.info('Storing historical prices')
 
   const fetchTime = new Date(Date.now())
-  const prices = await calculatePrices(exchangeRateManager)
+  const tokenAddresses = tokenInfoCache.getTokenAddresses()
+  const prices = await calculateCUsdPrices(exchangeRateManager, tokenAddresses)
   const cUSDAddress = exchangeRateManager.cUSDTokenAddress
 
   const batchInsertItems = Object.entries(prices)
@@ -117,7 +119,7 @@ export async function storeHistoricalPrices({
       base_token: cUSDAddress,
       price: price.toString(),
       at: fetchTime.toISOString(),
-      fetched_from: 'Exchange library',
+      fetched_from: 'Coingecko + Exchange library',
     }))
 
   await db('historical_token_prices')
@@ -154,10 +156,23 @@ async function addStakedCelo(prices: PriceByAddress) {
   return returnedPrices
 }
 
-async function calculatePrices(
+async function calculateCUsdPrices(
   exchangeRateManager: ExchangeRateManager,
+  tokenAddresses: string[],
 ): Promise<PriceByAddress> {
-  const prices = await exchangeRateManager.calculatecUSDPrices()
+  const [exchangeLibraryPrices, coingeckoPrices] = await Promise.all([
+    exchangeRateManager.calculatecUSDPrices(),
+    fetchPricesOrEmpty(
+      tokenAddresses,
+      Chain.Celo,
+      exchangeRateManager.cUSDTokenAddress,
+    ),
+  ])
 
-  return await addStakedCelo(addPeggedPrices(prices))
+  return addStakedCelo(
+    addPeggedPrices({
+      ...exchangeLibraryPrices,
+      ...coingeckoPrices,
+    }),
+  )
 }

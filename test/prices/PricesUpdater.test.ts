@@ -40,6 +40,10 @@ const extraPegToken = {
   pegTo: '0x12222',
 }
 
+const newCoingeckoToken = {
+  address: '0x1238',
+}
+
 const OLD_ENV = process.env
 
 const FIREBASE_NODE = '/tokensInfo'
@@ -62,8 +66,9 @@ jest.mock('../../src/helpers/TokenInfoCache', () => ({
     extraToken,
     extraPegToken,
     STAKED_CELO,
+    newCoingeckoToken,
   ],
-  getTokensAddresses: () => [
+  getTokenAddresses: () => [
     CELO.address,
     cUSD.address,
     cEUR.address,
@@ -71,6 +76,7 @@ jest.mock('../../src/helpers/TokenInfoCache', () => ({
     extraToken.address,
     extraPegToken.address,
     STAKED_CELO.address,
+    newCoingeckoToken.address,
   ],
 }))
 
@@ -78,7 +84,15 @@ jest.mock('../../src/prices/StakedCelo', () => ({
   getStakedCeloPriceInCelo: async () => new BigNumber(2),
 }))
 
-describe('Mocking date and exchange manager', () => {
+jest.mock('../../src/prices/coingecko', () => ({
+  fetchPricesOrEmpty: async () => ({
+    [CELO.address]: new BigNumber(0.5), // Overriding exchange library
+    [cUSD.address]: new BigNumber(1.002),
+    [newCoingeckoToken.address]: new BigNumber(4),
+  }),
+}))
+
+describe('Mocking date, exchange manager and coingecko', () => {
   let dateNowSpy: any
   const mockDate = 1487076708000
 
@@ -112,17 +126,19 @@ describe('Mocking date and exchange manager', () => {
         exchangeRateManager: mockExchangeRateManager,
       })
       expect(mockUpdateFirebase).toHaveBeenCalledWith(FIREBASE_NODE, {
-        [`${CELO.address}/usdPrice`]: '0.4',
+        [`${CELO.address}/usdPrice`]: '0.5',
         [`${CELO.address}/priceFetchedAt`]: mockDate,
-        [`${cUSD.address}/usdPrice`]: '1',
+        [`${cUSD.address}/usdPrice`]: '1.002',
         [`${cUSD.address}/priceFetchedAt`]: mockDate,
         [`${cEUR.address}/usdPrice`]: '1.17',
         [`${cEUR.address}/priceFetchedAt`]: mockDate,
         // It's peg to the value of cEUR
         [`${mcEUR.address}/usdPrice`]: '1.17',
         [`${mcEUR.address}/priceFetchedAt`]: mockDate,
-        [`${STAKED_CELO.address}/usdPrice`]: '0.8',
+        [`${STAKED_CELO.address}/usdPrice`]: '1',
         [`${STAKED_CELO.address}/priceFetchedAt`]: mockDate,
+        [`${newCoingeckoToken.address}/usdPrice`]: '4',
+        [`${newCoingeckoToken.address}/priceFetchedAt`]: mockDate,
       })
     })
   })
@@ -145,13 +161,14 @@ describe('Mocking date and exchange manager', () => {
         exchangeRateManager: mockExchangeRateManager,
       })
 
-      expect(await db(TABLE_NAME)).toHaveLength(5)
+      expect(await db(TABLE_NAME)).toHaveLength(6)
 
       await expectPriceToBeStored(db, bitcoin.address, '60000', mockDate)
       await expectPriceToBeStored(db, cEUR.address, '1.17', mockDate)
       await expectPriceToBeStored(db, mcEUR.address, '1.17', mockDate)
-      await expectPriceToBeStored(db, CELO.address, '0.4', mockDate)
-      await expectPriceToBeStored(db, STAKED_CELO.address, '0.8', mockDate) // It's 2 times the price of CELO
+      await expectPriceToBeStored(db, CELO.address, '0.5', mockDate)
+      await expectPriceToBeStored(db, STAKED_CELO.address, '1', mockDate) // It's 2 times the price of CELO
+      await expectPriceToBeStored(db, newCoingeckoToken.address, '4', mockDate)
     })
   })
 
@@ -186,7 +203,7 @@ describe('Mocking date and exchange manager', () => {
             case cEUR.address:
               return new BigNumber(1.17)
             default:
-              throw new Error('Could find token prices')
+              throw new Error(`Couldn't find token prices`)
           }
         },
       )

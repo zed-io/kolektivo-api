@@ -68,7 +68,7 @@ export async function down(knex: Knex): Promise<void> {
 }
 
 async function historicalPricesMigration(knex: Knex) {
-  const tokenAddresses = await fetchTokensAddresses()
+  const tokenAddresses = await fetchTokenAddresses()
   const celoTuplesToInsert = await fetchHistoricalCeloData(tokenAddresses)
   await knex.batchInsert(TABLE_NAME, celoTuplesToInsert)
   const cEurTuplesToInsert = await fetchHistoricalcEurData(tokenAddresses, knex)
@@ -126,7 +126,7 @@ async function fetchHistoricalCeloData(tokenAddresses: TokenAddresses) {
   }))
 }
 
-async function fetchTokensAddresses(): Promise<TokenAddresses> {
+async function fetchTokenAddresses(): Promise<TokenAddresses> {
   const snapshot = (await database.ref(`tokensInfo`).once('value')).val()
   const tokensInfoValue = Object.values(snapshot)
   const cUSDAddress = getAddressForSymbol(tokensInfoValue, 'cUSD')

@@ -39,7 +39,7 @@ class TokenInfoCache {
     )
   }
 
-  getTokensAddresses() {
+  getTokenAddresses() {
     return Object.keys(this.tokensInfo)
   }
 
