@@ -29,6 +29,7 @@ async function main() {
     STAKED_CELO_TOKEN_ADDRESS: '0xD22E18556E43cb29D6d6172D4b33Fd2Edb629EF2',
     STAKED_CELO_MANAGER_ADDRESS: '0xFfe124dde2b29fA848aD8caAEBE85651F0b5c406',
     ALCHEMY_ETHEREUM_API_KEY: 'does not matter',
+    BITMAMA_API: 'https://cico.bitmama.io',
   }
 
   const subprocess: ChildProcess = spawn('node', ['dist/index.js'], {

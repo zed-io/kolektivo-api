@@ -3,9 +3,11 @@ import BigNumber from 'bignumber.js'
 import CurrencyConversionAPI from './CurrencyConversionAPI'
 import ExchangeRateAPI from './ExchangeRateAPI'
 import GoldExchangeRateAPI from './GoldExchangeRateAPI'
+import BitmamaAPI from './BitmamaAPI'
 
 jest.mock('./ExchangeRateAPI')
 jest.mock('./GoldExchangeRateAPI')
+jest.mock('./BitmamaAPI')
 
 const mockDefaultGetExchangeRate = ExchangeRateAPI.prototype
   .getExchangeRate as jest.Mock
@@ -15,6 +17,9 @@ const mockGoldGetExchangeRate = GoldExchangeRateAPI.prototype
   .getExchangeRate as jest.Mock
 mockGoldGetExchangeRate.mockResolvedValue(new BigNumber(10))
 
+const mockBitmamaGetExchangeRate = BitmamaAPI.prototype
+  .getExchangeRate as jest.Mock
+mockBitmamaGetExchangeRate.mockResolvedValue(new BigNumber(200))
 describe('CurrencyConversionAPI', () => {
   let currencyConversionAPI: CurrencyConversionAPI
 
@@ -23,7 +28,11 @@ describe('CurrencyConversionAPI', () => {
     const exchangeRateAPI = new ExchangeRateAPI({
       exchangeRatesAPIAccessKey: 'FOO',
     })
-    currencyConversionAPI = new CurrencyConversionAPI({ exchangeRateAPI })
+    const bitmamaAPI = new BitmamaAPI('https://bitmama.url')
+    currencyConversionAPI = new CurrencyConversionAPI({
+      exchangeRateAPI,
+      bitmamaAPI,
+    })
     currencyConversionAPI.initialize({
       context: {},
       cache: new InMemoryLRUCache(),
@@ -105,6 +114,17 @@ describe('CurrencyConversionAPI', () => {
     expect(result).toEqual(new BigNumber(20))
     expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(1)
     expect(mockGoldGetExchangeRate).toHaveBeenCalledTimes(0)
+  })
+
+  it('should retrieve rate for USD/NGN', async () => {
+    const result = await currencyConversionAPI.getExchangeRate({
+      sourceCurrencyCode: 'USD',
+      currencyCode: 'NGN',
+    })
+    expect(result).toEqual(new BigNumber(200))
+    expect(mockDefaultGetExchangeRate).toHaveBeenCalledTimes(0)
+    expect(mockGoldGetExchangeRate).toHaveBeenCalledTimes(0)
+    expect(mockBitmamaGetExchangeRate).toHaveBeenCalledTimes(1)
   })
 
   it('should retrieve rate for MXN/USD', async () => {

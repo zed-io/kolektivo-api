@@ -11,22 +11,32 @@ import {
 } from './consts'
 import ExchangeRateAPI from './ExchangeRateAPI'
 import GoldExchangeRateAPI from './GoldExchangeRateAPI'
+import BitmamaAPI from './BitmamaAPI'
 
 function insertIf<T>(condition: boolean, element: T) {
   return condition ? [element] : []
 }
 export default class CurrencyConversionAPI<TContext = any> extends DataSource {
   exchangeRateAPI: ExchangeRateAPI
+  bitmamaAPI: BitmamaAPI
   goldExchangeRateAPI = new GoldExchangeRateAPI()
 
-  constructor({ exchangeRateAPI }: { exchangeRateAPI: ExchangeRateAPI }) {
+  constructor({
+    exchangeRateAPI,
+    bitmamaAPI,
+  }: {
+    exchangeRateAPI: ExchangeRateAPI
+    bitmamaAPI: BitmamaAPI
+  }) {
     super()
     this.exchangeRateAPI = exchangeRateAPI
+    this.bitmamaAPI = bitmamaAPI
   }
 
   initialize(config: DataSourceConfig<TContext>): void {
     this.exchangeRateAPI.initialize(config)
     this.goldExchangeRateAPI.initialize(config)
+    this.bitmamaAPI.initialize(config)
   }
 
   async getFromMoneyAmount({
@@ -157,6 +167,11 @@ export default class CurrencyConversionAPI<TContext = any> extends DataSource {
         sourceCurrencyCode: fromCode,
         currencyCode: toCode,
         timestamp,
+      })
+    } else if (fromCode === 'NGN' || toCode === 'NGN') {
+      return this.bitmamaAPI.getExchangeRate({
+        fromCurrencyCode: fromCode,
+        toCurrencyCode: toCode,
       })
     } else {
       return this.exchangeRateAPI.getExchangeRate({

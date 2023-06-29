@@ -18,6 +18,11 @@ const mockExchangeAPI = {
   getExchangeRate: (args: any) => mockGetExchangeRate(args),
 }
 
+const mockBitmamaGetExchangeRate = jest.fn()
+const mockBitmamaAPI = {
+  getExchangeRate: (args: any) => mockBitmamaGetExchangeRate(args),
+}
+
 describe('PricesService', () => {
   let db: Knex
   let priceService: PricesService
@@ -25,8 +30,12 @@ describe('PricesService', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
     db = await initDatabase({ client: 'sqlite3' })
-    // @ts-ignore
-    priceService = new PricesService(db, mockExchangeAPI, mockcUSDAddress)
+    priceService = new PricesService(
+      db, // @ts-ignore
+      mockExchangeAPI,
+      mockBitmamaAPI,
+      mockcUSDAddress,
+    )
   })
 
   afterEach(async () => {
@@ -80,6 +89,18 @@ describe('PricesService', () => {
     expect(mockGetExchangeRate).not.toHaveBeenCalled()
   })
 
+  it('should use bitmama API when local currency is NGN', async () => {
+    mockBitmamaGetExchangeRate.mockReturnValue(1.2)
+
+    const price = await priceService.getTokenToLocalCurrencyPrice(
+      mockcUSDAddress,
+      'NGN',
+      new Date(mockDate),
+    )
+    expect(price.toString()).toBe('1.2')
+    expect(mockBitmamaGetExchangeRate).toHaveBeenCalled()
+  })
+
   async function addHistoricPrice(
     token: string,
     price: string,
@@ -109,11 +130,12 @@ describe('PricesService', () => {
     dateOffset: number,
     expectedValue: string,
     token: string = defaultToken,
+    currency: string = defaultLocalCurrency,
   ) {
     const queryDate = new Date(mockDate + dateOffset)
     const price = await priceService.getTokenToLocalCurrencyPrice(
       token,
-      defaultLocalCurrency,
+      currency,
       queryDate,
     )
     expect(price.toString()).toBe(expectedValue)

@@ -308,4 +308,5 @@ export interface Config {
     dsn?: string
     tracesSampleRate: number
   }
+  bitmamaApiBaseUrl: string
 }

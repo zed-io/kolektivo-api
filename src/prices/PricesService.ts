@@ -5,6 +5,7 @@ import ExchangeRateAPI from '../currencyConversion/ExchangeRateAPI'
 import { logger } from '../logger'
 import { DataSource, DataSourceConfig } from 'apollo-datasource'
 import { USD } from '../currencyConversion/consts'
+import BitmamaAPI from '../currencyConversion/BitmamaAPI'
 
 const TABLE_NAME = 'historical_token_prices'
 const MAX_TIME_GAP = 1000 * 60 * 60 * 4 // 4 hours
@@ -14,6 +15,7 @@ export default class PricesService<TContext = any> extends DataSource {
   constructor(
     private readonly db: Knex,
     private readonly exchangeRateAPI: ExchangeRateAPI,
+    private readonly bitmamaAPI: BitmamaAPI,
     private readonly cUSDAddress: string,
   ) {
     super()
@@ -21,6 +23,7 @@ export default class PricesService<TContext = any> extends DataSource {
 
   initialize(config: DataSourceConfig<TContext>): void {
     this.exchangeRateAPI.initialize(config)
+    this.bitmamaAPI.initialize(config)
   }
 
   /**
@@ -107,7 +110,12 @@ export default class PricesService<TContext = any> extends DataSource {
     if (localCurrency === USD) {
       return new BigNumber(1)
     }
-
+    if (localCurrency === 'NGN') {
+      return await this.bitmamaAPI.getExchangeRate({
+        fromCurrencyCode: USD,
+        toCurrencyCode: localCurrency,
+      })
+    }
     return await this.exchangeRateAPI.getExchangeRate({
       sourceCurrencyCode: USD,
       currencyCode: localCurrency,

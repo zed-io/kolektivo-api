@@ -17,6 +17,7 @@ import knownAddressesCache from './helpers/KnownAddressesCache'
 import tokenInfoCache from './helpers/TokenInfoCache'
 import { logger } from './logger'
 import PricesService from './prices/PricesService'
+import BitmamaAPI from './currencyConversion/BitmamaAPI'
 import { AlchemyDataSourceManager } from './datasource/alchemy/AlchemyDataSource'
 import { Config, AlchemyChain, DeployEnv } from './types'
 import { ALCHEMY_ENV_NETWORK_MAP } from './config'
@@ -81,6 +82,11 @@ async function parseArgs(): Promise<Config> {
       type: 'string',
       demandOption: true,
     })
+    .option('bitmama-api', {
+      description: 'Bitmama API base URL',
+      type: 'string',
+      demandOption: true,
+    })
     .option('sentry-dsn', {
       description: 'Sentry DSN',
       type: 'string',
@@ -119,6 +125,7 @@ async function parseArgs(): Promise<Config> {
       dsn: argv['sentry-dsn'],
       tracesSampleRate: argv['sentr-traces-sample-rate'] as number,
     },
+    bitmamaApiBaseUrl: argv['bitmama-api'],
   }
 }
 
@@ -170,10 +177,15 @@ async function main() {
   const exchangeRateAPI = new ExchangeRateAPI({
     exchangeRatesAPIAccessKey: config.exchangeRateApiKey,
   })
-  const currencyConversionAPI = new CurrencyConversionAPI({ exchangeRateAPI })
+  const bitmamaAPI = new BitmamaAPI(config.bitmamaApiBaseUrl)
+  const currencyConversionAPI = new CurrencyConversionAPI({
+    exchangeRateAPI,
+    bitmamaAPI,
+  })
   const pricesService = new PricesService(
     db,
     exchangeRateAPI,
+    bitmamaAPI,
     exchangeRateManager.cUSDTokenAddress,
   )
 
