@@ -5,28 +5,28 @@ import {
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
   Alchemy,
-  Network,
   AssetTransfersWithMetadataResponse,
   CoreNamespace,
+  Network,
 } from 'alchemy-sdk'
 import { logger } from '../../../src/logger'
 import {
-  mockTxReceipt,
-  mockSortedTx,
-  mockErc20TransferTo,
-  mockAlchemyAssetTransfersWithHash,
   mockAddress,
-  mockAlchemyTransfersTo,
-  mockAlchemyTransfersFrom,
-  mockMergedTxs,
-  mockTxReceipts,
+  mockAlchemyAssetTransfersWithHash,
   mockAlchemyTransactions,
+  mockAlchemyTransfersFrom,
+  mockAlchemyTransfersTo,
   mockErc20TransferFrom,
+  mockErc20TransferTo,
+  mockMergedTxs,
   mockNftReceivedTx,
   mockNftSentTx,
+  mockSortedTx,
   mockTokenReceivedTx,
   mockTokenSentTx,
   mockTokenSwapTx,
+  mockTxReceipt,
+  mockTxReceipts,
 } from '../../mock-data/alchemy'
 import {
   NftReceived,
@@ -35,6 +35,7 @@ import {
   TokenSent,
   TokenSwap,
 } from '../../../src/events/alchemy'
+import { AlchemyChain } from '../../../src/types'
 
 jest.mock('../../../src/logger')
 jest.mock('alchemy-sdk', () => {
@@ -52,6 +53,7 @@ describe('AlchemyDataSource', () => {
     mockAlchemyDataSource = new AlchemyDataSource({
       network: Network.ETH_MAINNET,
       apiKey: 'some-key',
+      chain: AlchemyChain.Ethereum,
     })
   })
 
@@ -62,6 +64,7 @@ describe('AlchemyDataSource', () => {
           new AlchemyDataSource({
             network: Network.ETH_MAINNET,
             apiKey: 'some-key',
+            chain: AlchemyChain.Ethereum,
           }),
       ).not.toThrow()
     })
@@ -188,6 +191,7 @@ describe('AlchemyDataSource', () => {
       mockAlchemyDataSource = new AlchemyDataSource({
         network: Network.ETH_MAINNET,
         apiKey: 'some-key',
+        chain: AlchemyChain.Ethereum,
       })
     })
 
@@ -351,6 +355,7 @@ describe('AlchemyDataSource', () => {
       mockAlchemyDataSource = new AlchemyDataSource({
         network: Network.ETH_MAINNET,
         apiKey: 'some-key',
+        chain: AlchemyChain.Ethereum,
       })
     })
 

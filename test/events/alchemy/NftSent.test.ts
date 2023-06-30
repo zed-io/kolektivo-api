@@ -7,9 +7,13 @@ import {
   mockNftTransferTo,
   mockTxReceipt,
 } from '../../mock-data/alchemy'
+import { AlchemyChain } from '../../../src/types'
 
 describe('NftSent', () => {
-  const nftSent = new NftSent({ userAddress: 'some-address' })
+  const nftSent = new NftSent({
+    userAddress: 'some-address',
+    chain: AlchemyChain.Ethereum,
+  })
 
   describe('matches', () => {
     it('returns true for tx with single nft transfers from', () => {

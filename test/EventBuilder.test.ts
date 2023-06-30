@@ -1,6 +1,7 @@
 import nock from 'nock'
 import { EventBuilder } from '../src/helpers/EventBuilder'
 import { GET_NFT_API_URL } from '../src/config'
+import { Chain } from '../src/types'
 
 jest.mock('../src/config.ts', () => {
   return {
@@ -18,7 +19,7 @@ jest.mock('../src/utils.ts', () => ({
 
 nock('https://example.com')
   .get(
-    '/getNft?contractAddress=0x1ecd77075f7504ba849d47dce4cdc9695f1fe942&tokenId=4',
+    '/getNft?contractAddress=0x1ecd77075f7504ba849d47dce4cdc9695f1fe942&tokenId=4&network=celo',
   )
   .reply(200, {
     message: 'OK',
@@ -61,7 +62,7 @@ nock('https://example.com')
 
 nock('https://example.com')
   .get(
-    '/getNft?contractAddress=0x1ecd77075f7504ba849d47dce4cdc9695f1fe942&tokenId=1',
+    '/getNft?contractAddress=0x1ecd77075f7504ba849d47dce4cdc9695f1fe942&tokenId=1&network=celo',
   )
   .reply(500, {
     message: 'Internal Server Error',
@@ -73,10 +74,11 @@ describe('getNft', () => {
       '0x0000000000000000000000000000000000007E57',
     )
 
-    const nft = await EventBuilder.getNft(
-      '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
-      '4',
-    )
+    const nft = await EventBuilder.getNft({
+      contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
+      tokenId: '4',
+      chain: Chain.Celo,
+    })
     expect(nft).toEqual({
       contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
       metadata: {
@@ -138,7 +140,68 @@ describe('getNft', () => {
     )
 
     await expect(
-      EventBuilder.getNft('0x1ecd77075f7504ba849d47dce4cdc9695f1fe942', '1'),
+      EventBuilder.getNft({
+        contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
+        tokenId: '1',
+        chain: Chain.Celo,
+      }),
     ).rejects.toThrow(`Received response code 500 from ${GET_NFT_API_URL}`)
+  })
+})
+
+describe('getNfts', () => {
+  const mockGetNft = jest.fn()
+  beforeEach(() => {
+    EventBuilder.getNft = mockGetNft
+  })
+  it('return successes and filter out failures', async () => {
+    mockGetNft.mockImplementation(async ({ contractAddress, tokenId }) => {
+      if (tokenId === 'bad') {
+        throw new Error('simulating getNft error')
+      }
+      return {
+        tokenId,
+        contractAddress,
+        tokenUri: 'token-uri',
+        ownerAddress: '0x123',
+        metadata: {
+          name: 'nft-name',
+          description: 'nft-description',
+          image: 'nft-image',
+        },
+        media: [],
+      }
+    })
+    const nfts = await EventBuilder.getNfts(
+      [
+        { tokenAddress: '0xabc', tokenId: 'good' },
+        { tokenAddress: '0xdef', tokenId: 'bad' },
+      ],
+      Chain.Celo,
+    )
+    expect(mockGetNft).toHaveBeenCalledWith({
+      contractAddress: '0xabc',
+      tokenId: 'good',
+      chain: Chain.Celo,
+    })
+    expect(mockGetNft).toHaveBeenCalledWith({
+      contractAddress: '0xdef',
+      tokenId: 'bad',
+      chain: Chain.Celo,
+    })
+    expect(nfts).toEqual([
+      {
+        tokenId: 'good',
+        contractAddress: '0xabc',
+        tokenUri: 'token-uri',
+        ownerAddress: '0x123',
+        metadata: {
+          name: 'nft-name',
+          description: 'nft-description',
+          image: 'nft-image',
+        },
+        media: [],
+      },
+    ])
   })
 })

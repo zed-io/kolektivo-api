@@ -1,16 +1,18 @@
 import { BigNumber } from 'bignumber.js'
 import {
-  FeeV2,
-  TokenTransactionTypeV2,
+  AlchemyChain,
   BlockscoutTokenTransfer,
-  TokenTransferV2,
+  Chain,
+  FeeV2,
+  Nft,
   NftTransferV2,
   TokenExchangeV2,
-  Nft,
+  TokenTransactionTypeV2,
+  TokenTransferV2,
 } from '../types'
 import {
-  Fee,
   BlockscoutTransaction,
+  Fee,
 } from '../transaction/blockscout/BlockscoutTransaction'
 import { ContractAddresses, getContractAddresses, WEI_PER_GOLD } from '../utils'
 import knownAddressesCache from './KnownAddressesCache'
@@ -19,6 +21,13 @@ import fetch from 'cross-fetch'
 import { GET_NFT_API_URL } from '../config'
 import { logger } from '../logger'
 import asyncPool from 'tiny-async-pool'
+import { isDefined } from '../transaction/TransactionType'
+
+export const ChainToNftNetwork: Record<Chain | AlchemyChain, string> = {
+  // maps Chain to network name used in nft-indexer
+  [Chain.Celo]: 'celo',
+  [Chain.Ethereum]: 'ethereum',
+}
 
 export class EventBuilder {
   static contractAddresses: ContractAddresses
@@ -75,6 +84,7 @@ export class EventBuilder {
     transaction: BlockscoutTransaction,
     address: string | null,
     eventType: TokenTransactionTypeV2,
+    chain: Chain | AlchemyChain,
     fees?: Fee[],
   ): Promise<NftTransferV2> {
     const transactionHash = transaction.transactionHash
@@ -101,32 +111,39 @@ export class EventBuilder {
       .filter(filterFn)
       .filter((transfer) => transfer.tokenAddress && transfer.tokenId)
 
-    const nfts = await asyncPool(
-      5,
-      filteredTransfers,
-      async ({ tokenAddress, tokenId }: any) => {
+    const nfts = await EventBuilder.getNfts(filteredTransfers, chain)
+    return {
+      type: eventType,
+      timestamp,
+      block,
+      transactionHash,
+      nfts,
+      ...(fees && {
+        fees: await EventBuilder.formatFees(fees, transaction.timestamp),
+      }),
+    }
+  }
+
+  static async getNfts(
+    addressAndIds: { tokenAddress: string; tokenId: string }[],
+    chain: Chain | AlchemyChain,
+  ): Promise<Nft[]> {
+    return (
+      await asyncPool(5, addressAndIds, async ({ tokenAddress, tokenId }) => {
         try {
-          return await EventBuilder.getNft(tokenAddress, tokenId)
+          return await EventBuilder.getNft({
+            contractAddress: tokenAddress,
+            tokenId,
+            chain,
+          })
         } catch (err) {
           logger.error({
             message: `Error fetching NFT ${tokenAddress}:${tokenId}`,
             err,
           })
         }
-      },
-    )
-    const validNfts = nfts.filter((nft) => nft !== undefined) as Nft[]
-
-    return {
-      type: eventType,
-      timestamp,
-      block,
-      transactionHash,
-      nfts: validNfts,
-      ...(fees && {
-        fees: await EventBuilder.formatFees(fees, transaction.timestamp),
-      }),
-    }
+      })
+    ).filter(isDefined)
   }
 
   static async exchangeEvent(
@@ -183,9 +200,17 @@ export class EventBuilder {
     return Math.pow(10, tokenInfoCache.getDecimalsForToken(address))
   }
 
-  static async getNft(contractAddress: string, tokenId: string): Promise<Nft> {
+  static async getNft({
+    contractAddress,
+    tokenId,
+    chain,
+  }: {
+    contractAddress: string
+    tokenId: string
+    chain: Chain | AlchemyChain
+  }): Promise<Nft> {
     try {
-      const url = `${GET_NFT_API_URL}?contractAddress=${contractAddress}&tokenId=${tokenId}`
+      const url = `${GET_NFT_API_URL}?contractAddress=${contractAddress}&tokenId=${tokenId}&network=${ChainToNftNetwork[chain]}`
       const response = await fetch(url)
       if (!response.ok)
         throw new Error(

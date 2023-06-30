@@ -1,17 +1,21 @@
 import { TokenSwap } from '../../../src/events/alchemy'
 import { AlchemyTransaction } from '../../../src/transaction/alchemy/AlchemyTransaction'
 import {
-  mockErc20TransferTo,
   mockErc20TransferFrom,
+  mockErc20TransferTo,
   mockNftSentTx,
   mockTokenReceivedTx,
   mockTokenSentTx,
   mockTokenSwapTx,
   mockTxReceipt,
 } from '../../mock-data/alchemy'
+import { AlchemyChain } from '../../../src/types'
 
 describe('TokenSwap', () => {
-  const tokenSwap = new TokenSwap({ userAddress: 'some-address' })
+  const tokenSwap = new TokenSwap({
+    userAddress: 'some-address',
+    chain: AlchemyChain.Ethereum,
+  })
 
   describe('matches', () => {
     it('returns true for tx with exactly one erc 20 transfers from and to', () => {

@@ -69,6 +69,7 @@ export class AlchemyDataSourceManager extends RESTDataSource {
     return new AlchemyDataSource({
       network: this.alchemyNetworkMap[chain],
       apiKey: this.alchemyApiKeys[chain],
+      chain,
     })
   }
 }
@@ -79,10 +80,20 @@ export class AlchemyDataSource extends BaseDataSource<
 > {
   network: Network
   alchemyClient: Alchemy
+  chain: AlchemyChain
 
-  constructor({ network, apiKey }: { network: Network; apiKey: string }) {
+  constructor({
+    network,
+    apiKey,
+    chain,
+  }: {
+    network: Network
+    apiKey: string
+    chain: AlchemyChain
+  }) {
     super()
     this.network = network
+    this.chain = chain
     this.alchemyClient = new Alchemy({
       apiKey,
       network,
@@ -283,7 +294,7 @@ export class AlchemyDataSource extends BaseDataSource<
     txs: AlchemyTransaction[],
     _valoraVersion?: string,
   ): ClassifiedAlchemyTransaction[] {
-    const context = { userAddress: address }
+    const context = { userAddress: address, chain: this.chain }
     const classifier = new TransactionClassifier<
       AlchemyTransaction,
       TransactionType<AlchemyTransaction>

@@ -31,6 +31,7 @@ export class NftReceived extends BlockscoutTransactionType {
       transaction,
       this.context.userAddress.toLowerCase(),
       TokenTransactionTypeV2.NFT_RECEIVED,
+      this.context.chain,
     )
   }
 }

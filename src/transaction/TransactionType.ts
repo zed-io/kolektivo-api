@@ -1,6 +1,8 @@
-import { TokenTransactionV2, Transaction } from '../types'
+import { AlchemyChain, Chain, TokenTransactionV2, Transaction } from '../types'
+
 export interface Context {
   userAddress: string
+  chain: Chain | AlchemyChain
   tokens?: string[]
 }
 
@@ -12,6 +14,7 @@ export abstract class TransactionType<T extends Transaction> {
   }
 
   abstract matches(transaction: T): boolean
+
   abstract getEvent(transaction: T): Promise<TokenTransactionV2>
 }
 

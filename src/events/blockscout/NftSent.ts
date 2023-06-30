@@ -31,6 +31,7 @@ export class NftSent extends BlockscoutTransactionType {
       transaction,
       this.context.userAddress.toLowerCase(),
       TokenTransactionTypeV2.NFT_SENT,
+      this.context.chain,
     )
   }
 }

@@ -9,9 +9,13 @@ import {
   mockTxReceipt,
 } from '../../mock-data/alchemy'
 import knownAddressesCache from '../../../src/helpers/KnownAddressesCache'
+import { AlchemyChain } from '../../../src/types'
 
 describe('TokenReceived', () => {
-  const tokenReceived = new TokenReceived({ userAddress: 'some-address' })
+  const tokenReceived = new TokenReceived({
+    userAddress: 'some-address',
+    chain: AlchemyChain.Ethereum,
+  })
 
   describe('matches', () => {
     it('returns true for tx with single erc 20 transfers to', () => {
