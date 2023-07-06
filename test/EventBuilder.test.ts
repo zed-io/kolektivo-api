@@ -1,7 +1,8 @@
 import nock from 'nock'
 import { EventBuilder } from '../src/helpers/EventBuilder'
 import { GET_NFT_API_URL } from '../src/config'
-import { Chain } from '../src/types'
+import { AlchemyChain, Chain, Nft, TokenTransactionTypeV2 } from '../src/types'
+import { mockNftTransferTo } from './mock-data/alchemy'
 
 jest.mock('../src/config.ts', () => {
   return {
@@ -203,5 +204,78 @@ describe('getNfts', () => {
         media: [],
       },
     ])
+  })
+})
+
+describe('hasTokenIdAndTokenAddress', () => {
+  it('returns true for object with tokenId and tokenAddress', () => {
+    expect(
+      EventBuilder.hasTokenIdAndTokenAddress({
+        tokenId: 'token-id',
+        tokenAddress: 'token-address',
+      }),
+    ).toEqual(true)
+  })
+  it('returns false for object that lacks tokenId or tokenAddress', () => {
+    expect(
+      EventBuilder.hasTokenIdAndTokenAddress({
+        tokenId: null,
+        tokenAddress: 'token-address',
+      }),
+    ).toEqual(false)
+    expect(
+      EventBuilder.hasTokenIdAndTokenAddress({
+        tokenId: 'token-id',
+        tokenAddress: null,
+      }),
+    ).toEqual(false)
+    expect(
+      EventBuilder.hasTokenIdAndTokenAddress({
+        tokenId: null,
+        tokenAddress: null,
+      }),
+    ).toEqual(false)
+  })
+})
+
+describe('alchemyNftTransferEvent', () => {
+  it('maps alchemy transaction to NftTransferV2', async () => {
+    const mockNft: Nft = {
+      tokenId: 'nft-received-token-id',
+      contractAddress: '0x178e141a0e3b34152f73ff610437a7bf9b83267a',
+      tokenUri: 'token-uri',
+      ownerAddress: '0x123',
+      metadata: {
+        name: 'nft-name',
+        description: 'nft-description',
+        image: 'nft-image',
+      },
+      media: [],
+    }
+    EventBuilder.getNfts = jest.fn().mockResolvedValue([mockNft])
+    const nftTransfer = await EventBuilder.alchemyNftTransferEvent({
+      nftTransfers: [mockNftTransferTo],
+      chain: AlchemyChain.Ethereum,
+      type: TokenTransactionTypeV2.NFT_RECEIVED,
+      transactionHash: 'mock-transaction-hash',
+      block: '15',
+    })
+    expect(EventBuilder.getNfts).toHaveBeenCalledWith(
+      [
+        {
+          tokenId: 'nft-received-token-id',
+          tokenAddress: '0x178e141a0e3b34152f73ff610437a7bf9b83267a',
+        },
+      ],
+      Chain.Ethereum,
+    )
+    expect(nftTransfer).toEqual({
+      type: 'NFT_RECEIVED',
+      transactionHash: 'mock-transaction-hash',
+      timestamp: 1686689604000,
+      block: '15',
+      fees: [], // TODO add fees once wallet can handle fees paid in native currency https://linear.app/valora/issue/ACT-840/display-fees-correctly-when-paid-in-native-token
+      nfts: [mockNft],
+    })
   })
 })

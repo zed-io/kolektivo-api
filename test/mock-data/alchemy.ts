@@ -297,6 +297,7 @@ export const mockNftTransferFrom: AssetTransfersWithMetadataResult = {
   ...mockErc20TransferTo,
   from: mockAddress,
   category: AssetTransfersCategory.ERC721,
+  tokenId: 'nft-sent-token-id',
 }
 
 export const mockNftReceivedTx = new AlchemyTransaction({

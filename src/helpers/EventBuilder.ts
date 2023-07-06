@@ -22,6 +22,7 @@ import { GET_NFT_API_URL } from '../config'
 import { logger } from '../logger'
 import asyncPool from 'tiny-async-pool'
 import { isDefined } from '../transaction/TransactionType'
+import { AssetTransfersWithMetadataResult } from 'alchemy-sdk'
 
 export const ChainToNftNetwork: Record<Chain | AlchemyChain, string> = {
   // maps Chain to network name used in nft-indexer
@@ -121,6 +122,48 @@ export class EventBuilder {
       ...(fees && {
         fees: await EventBuilder.formatFees(fees, transaction.timestamp),
       }),
+    }
+  }
+
+  static hasTokenIdAndTokenAddress(idAndAddress: {
+    tokenId: string | null
+    tokenAddress: string | null
+  }): idAndAddress is { tokenId: string; tokenAddress: string } {
+    return !!(idAndAddress.tokenId && idAndAddress.tokenAddress)
+  }
+
+  static async alchemyNftTransferEvent({
+    nftTransfers,
+    chain,
+    type,
+    transactionHash,
+    block,
+  }: {
+    nftTransfers: AssetTransfersWithMetadataResult[]
+    chain: AlchemyChain
+    type: TokenTransactionTypeV2
+    transactionHash: string
+    block: string
+  }): Promise<NftTransferV2> {
+    const nfts = await EventBuilder.getNfts(
+      nftTransfers
+        .map(({ tokenId, rawContract: { address: tokenAddress } }) => ({
+          tokenId,
+          tokenAddress,
+        }))
+        .filter(EventBuilder.hasTokenIdAndTokenAddress),
+      chain,
+    )
+    const timestamp = new Date(
+      nftTransfers[0].metadata.blockTimestamp,
+    ).getTime()
+    return {
+      type,
+      transactionHash,
+      timestamp,
+      block,
+      nfts,
+      fees: [], // TODO add fees once wallet can handle fees paid in native currency https://linear.app/valora/issue/ACT-840/display-fees-correctly-when-paid-in-native-token
     }
   }
 

@@ -1,15 +1,20 @@
 import { AlchemyChain, Chain, TokenTransactionV2, Transaction } from '../types'
+import { AlchemyTransaction } from './alchemy/AlchemyTransaction'
 
-export interface Context {
+export type Context<C extends Chain | AlchemyChain> = {
   userAddress: string
-  chain: Chain | AlchemyChain
+  chain: C
   tokens?: string[]
 }
 
 export abstract class TransactionType<T extends Transaction> {
-  protected readonly context!: Context
+  protected readonly context!: Context<
+    T extends AlchemyTransaction ? AlchemyChain : Chain
+  >
 
-  constructor(context: Context) {
+  constructor(
+    context: Context<T extends AlchemyTransaction ? AlchemyChain : Chain>,
+  ) {
     this.context = context
   }
 

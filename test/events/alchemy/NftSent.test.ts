@@ -8,6 +8,7 @@ import {
   mockTxReceipt,
 } from '../../mock-data/alchemy'
 import { AlchemyChain } from '../../../src/types'
+import { EventBuilder } from '../../../src/helpers/EventBuilder'
 
 describe('NftSent', () => {
   const nftSent = new NftSent({
@@ -31,6 +32,21 @@ describe('NftSent', () => {
 
     it('returns false for tx with zero nft transfers to', () => {
       expect(nftSent.matches(mockNftReceivedTx)).toEqual(false)
+    })
+  })
+
+  describe('getEvent', () => {
+    it('calls EventBuilder.alchemyNftTransferEvent with correct params', async () => {
+      EventBuilder.alchemyNftTransferEvent = jest.fn()
+      await nftSent.getEvent(mockNftSentTx)
+      expect(EventBuilder.alchemyNftTransferEvent).toHaveBeenCalledWith({
+        nftTransfers: [mockNftTransferFrom],
+        chain: AlchemyChain.Ethereum,
+        type: 'NFT_SENT',
+        transactionHash:
+          '0xf50609b7ea2122ed93c182a8339f9dd9b952c101e83c516a478db39f80c73c3e',
+        block: '15',
+      })
     })
   })
 })
