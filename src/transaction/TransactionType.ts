@@ -1,7 +1,13 @@
-import { AlchemyChain, Chain, TokenTransactionV2, Transaction } from '../types'
+import {
+  AlchemyChain,
+  BlockscoutChain,
+  Chain,
+  TokenTransactionV2,
+  Transaction,
+} from '../types'
 import { AlchemyTransaction } from './alchemy/AlchemyTransaction'
 
-export type Context<C extends Chain | AlchemyChain> = {
+export type Context<C extends Chain> = {
   userAddress: string
   chain: C
   tokens?: string[]
@@ -9,11 +15,13 @@ export type Context<C extends Chain | AlchemyChain> = {
 
 export abstract class TransactionType<T extends Transaction> {
   protected readonly context!: Context<
-    T extends AlchemyTransaction ? AlchemyChain : Chain
+    T extends AlchemyTransaction ? AlchemyChain : BlockscoutChain
   >
 
   constructor(
-    context: Context<T extends AlchemyTransaction ? AlchemyChain : Chain>,
+    context: Context<
+      T extends AlchemyTransaction ? AlchemyChain : BlockscoutChain
+    >,
   ) {
     this.context = context
   }

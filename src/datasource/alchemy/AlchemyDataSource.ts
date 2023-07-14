@@ -38,9 +38,7 @@ const TRANSFER_CATEGORIES = [
 const MAX_ALCHEMY_RESULTS = 500
 export const MAX_RETURN_RESULTS = 25
 
-export function isAlchemyChain(
-  chain: Chain | AlchemyChain,
-): chain is AlchemyChain {
+export function isAlchemyChain(chain: Chain): chain is AlchemyChain {
   return Object.values(AlchemyChain).includes(chain as AlchemyChain)
 }
 

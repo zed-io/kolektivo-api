@@ -3,7 +3,7 @@ import {
   fetchPrices,
   fetchUsdPrices,
 } from '../../src/prices/coingecko'
-import { Chain } from '../../src/types'
+import { AlchemyChain, BlockscoutChain } from '../../src/types'
 
 const baseToken = '0x765DE816845861e75A25fCA122bb6898B8B1282a'
 
@@ -31,7 +31,7 @@ describe('fetchUsdPrices', () => {
     })
     mockFetch.mockReturnValue(mockFetchPromise)
 
-    const prices = await fetchUsdPrices(mockAddresses, Chain.Celo)
+    const prices = await fetchUsdPrices(mockAddresses, BlockscoutChain.Celo)
     expect(mockFetch).toHaveBeenCalledWith(
       `https://api.coingecko.com/api/v3/simple/token_price/celo?contract_addresses=0x765DE816845861e75A25fCA122bb6898B8B1282a,0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787,0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73&vs_currencies=usd`,
       TIMEOUT,
@@ -54,7 +54,7 @@ describe('fetchUsdPrices', () => {
     await expect(
       fetchUsdPrices(
         ['0x765DE816845861e75A25fCA122bb6898B8B1282a'],
-        Chain.Ethereum,
+        AlchemyChain.Ethereum,
       ),
     ).rejects.toThrowError('Request timed out')
 
@@ -75,7 +75,7 @@ describe('fetchUsdPrices', () => {
     await expect(
       fetchUsdPrices(
         ['0x765DE816845861e75A25fCA122bb6898B8B1282a'],
-        Chain.Celo,
+        BlockscoutChain.Celo,
       ),
     ).rejects.toThrowError('Error fetching prices from coingecko')
 
@@ -105,7 +105,11 @@ describe('fetchPrices', () => {
     })
     mockFetch.mockReturnValue(mockFetchPromise)
 
-    const prices = await fetchPrices(mockAddresses, Chain.Celo, baseToken)
+    const prices = await fetchPrices(
+      mockAddresses,
+      BlockscoutChain.Celo,
+      baseToken,
+    )
 
     expect(mockFetch).toHaveBeenCalledWith(
       `https://api.coingecko.com/api/v3/simple/token_price/celo?contract_addresses=0x765DE816845861e75A25fCA122bb6898B8B1282a,0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787,0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73&vs_currencies=usd`,
@@ -137,7 +141,7 @@ describe('fetchPrices', () => {
     mockFetch.mockReturnValue(mockFetchPromise)
 
     await expect(
-      fetchPrices(mockAddresses, Chain.Celo, baseToken),
+      fetchPrices(mockAddresses, BlockscoutChain.Celo, baseToken),
     ).rejects.toThrowError('Missing base token price from coingecko')
 
     expect(mockFetch).toHaveBeenCalledWith(

@@ -14,7 +14,7 @@ import {
   TokenAmount,
   MoneyAmount,
   TokenTransactionResult,
-  Chain,
+  BlockscoutChain,
 } from './types'
 import { isAlchemyChain } from './datasource/alchemy/AlchemyDataSource'
 import { FETCH_BALANCES_VIA_BLOCKSCOUT } from './config'
@@ -34,13 +34,13 @@ export const resolvers = {
     ): Promise<TokenTransactionResult> => {
       const { dataSources, valoraVersion } = context
       context.localCurrencyCode = args.localCurrencyCode
-      const chain = args.chain ?? Chain.Celo
+      const chain = args.chain ?? BlockscoutChain.Celo
       try {
         if (isAlchemyChain(chain)) {
           return await dataSources.alchemyDataSourceManager
             .getDataSource(chain)
             .getTokenTxs(args.address, args.afterCursor, valoraVersion)
-        } else if (chain === Chain.Celo) {
+        } else if (chain === BlockscoutChain.Celo) {
           return await dataSources.blockscoutAPI.getTokenTransactionsV2(
             args.address,
             args.afterCursor,

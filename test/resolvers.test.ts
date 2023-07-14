@@ -1,7 +1,12 @@
 import { resolvers, Context } from '../src/resolvers'
 import { DataSources } from '../src/apolloServer'
 
-import { TokenTransactionV2Args, AlchemyChain, Chain } from '../src/types'
+import {
+  TokenTransactionV2Args,
+  AlchemyChain,
+  BlockscoutChain,
+  Chain,
+} from '../src/types'
 
 import * as config from '../src/config'
 
@@ -62,7 +67,7 @@ describe('resolvers', () => {
       )
     })
     it('uses Blockscout if Celo chain selected', async () => {
-      args.chain = Chain.Celo
+      args.chain = BlockscoutChain.Celo
       const result = await resolvers.Query.tokenTransactionsV2(
         undefined,
         args,
@@ -81,7 +86,7 @@ describe('resolvers', () => {
       )
     })
     it('uses Alchemy if Ethereum chain selected', async () => {
-      args.chain = Chain.Ethereum
+      args.chain = AlchemyChain.Ethereum
       const result = await resolvers.Query.tokenTransactionsV2(
         undefined,
         args,

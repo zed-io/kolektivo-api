@@ -1,7 +1,12 @@
 import nock from 'nock'
 import { EventBuilder } from '../src/helpers/EventBuilder'
 import { GET_NFT_API_URL } from '../src/config'
-import { AlchemyChain, Chain, Nft, TokenTransactionTypeV2 } from '../src/types'
+import {
+  AlchemyChain,
+  BlockscoutChain,
+  Nft,
+  TokenTransactionTypeV2,
+} from '../src/types'
 import { mockNftTransferTo } from './mock-data/alchemy'
 
 jest.mock('../src/config.ts', () => {
@@ -78,7 +83,7 @@ describe('getNft', () => {
     const nft = await EventBuilder.getNft({
       contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
       tokenId: '4',
-      chain: Chain.Celo,
+      chain: BlockscoutChain.Celo,
     })
     expect(nft).toEqual({
       contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
@@ -144,7 +149,7 @@ describe('getNft', () => {
       EventBuilder.getNft({
         contractAddress: '0x1ecd77075f7504ba849d47dce4cdc9695f1fe942',
         tokenId: '1',
-        chain: Chain.Celo,
+        chain: BlockscoutChain.Celo,
       }),
     ).rejects.toThrow(`Received response code 500 from ${GET_NFT_API_URL}`)
   })
@@ -178,17 +183,17 @@ describe('getNfts', () => {
         { tokenAddress: '0xabc', tokenId: 'good' },
         { tokenAddress: '0xdef', tokenId: 'bad' },
       ],
-      Chain.Celo,
+      BlockscoutChain.Celo,
     )
     expect(mockGetNft).toHaveBeenCalledWith({
       contractAddress: '0xabc',
       tokenId: 'good',
-      chain: Chain.Celo,
+      chain: BlockscoutChain.Celo,
     })
     expect(mockGetNft).toHaveBeenCalledWith({
       contractAddress: '0xdef',
       tokenId: 'bad',
-      chain: Chain.Celo,
+      chain: BlockscoutChain.Celo,
     })
     expect(nfts).toEqual([
       {
@@ -267,7 +272,7 @@ describe('alchemyNftTransferEvent', () => {
           tokenAddress: '0x178e141a0e3b34152f73ff610437a7bf9b83267a',
         },
       ],
-      Chain.Ethereum,
+      AlchemyChain.Ethereum,
     )
     expect(nftTransfer).toEqual({
       type: 'NFT_RECEIVED',

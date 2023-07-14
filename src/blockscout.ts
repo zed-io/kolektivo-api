@@ -57,7 +57,7 @@ import {
   BlockscoutTokenTransfer,
   TokenTransactionResult,
   TokenTransactionV2,
-  Chain,
+  BlockscoutChain,
 } from './types'
 import { BlockscoutTransactionType } from './transaction/blockscout/BlockscoutTransactionType'
 
@@ -157,7 +157,7 @@ export class BlockscoutAPI extends RESTDataSource {
       afterCursor,
     )
 
-    const context = { userAddress, chain: Chain.Celo }
+    const context = { userAddress, chain: BlockscoutChain.Celo }
 
     // Order is important when classifying transactions.
     // Think that below is like case statement.

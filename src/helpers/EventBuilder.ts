@@ -1,6 +1,7 @@
 import { BigNumber } from 'bignumber.js'
 import {
   AlchemyChain,
+  BlockscoutChain,
   BlockscoutTokenTransfer,
   Chain,
   FeeV2,
@@ -24,10 +25,10 @@ import asyncPool from 'tiny-async-pool'
 import { isDefined } from '../transaction/TransactionType'
 import { AssetTransfersWithMetadataResult } from 'alchemy-sdk'
 
-export const ChainToNftNetwork: Record<Chain | AlchemyChain, string> = {
+export const ChainToNftNetwork: Record<Chain, string> = {
   // maps Chain to network name used in nft-indexer
-  [Chain.Celo]: 'celo',
-  [Chain.Ethereum]: 'ethereum',
+  [BlockscoutChain.Celo]: 'celo',
+  [AlchemyChain.Ethereum]: 'ethereum',
 }
 
 export class EventBuilder {
@@ -85,7 +86,7 @@ export class EventBuilder {
     transaction: BlockscoutTransaction,
     address: string | null,
     eventType: TokenTransactionTypeV2,
-    chain: Chain | AlchemyChain,
+    chain: BlockscoutChain,
     fees?: Fee[],
   ): Promise<NftTransferV2> {
     const transactionHash = transaction.transactionHash
@@ -169,7 +170,7 @@ export class EventBuilder {
 
   static async getNfts(
     addressAndIds: { tokenAddress: string; tokenId: string }[],
-    chain: Chain | AlchemyChain,
+    chain: Chain,
   ): Promise<Nft[]> {
     return (
       await asyncPool(5, addressAndIds, async ({ tokenAddress, tokenId }) => {
@@ -250,7 +251,7 @@ export class EventBuilder {
   }: {
     contractAddress: string
     tokenId: string
-    chain: Chain | AlchemyChain
+    chain: Chain
   }): Promise<Nft> {
     try {
       const url = `${GET_NFT_API_URL}?contractAddress=${contractAddress}&tokenId=${tokenId}&network=${ChainToNftNetwork[chain]}`

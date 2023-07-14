@@ -9,7 +9,7 @@ import asyncPool from 'tiny-async-pool'
 import { CELO_TOKEN_ADDRESS, STAKED_CELO_TOKEN_ADDRESS } from '../config'
 import { getStakedCeloPriceInCelo } from './StakedCelo'
 import { fetchPricesOrEmpty } from './coingecko'
-import { Chain } from '../types'
+import { BlockscoutChain } from '../types'
 
 const FIREBASE_NODE_KEY = '/tokensInfo'
 const MAX_CONCURRENCY = 30
@@ -164,7 +164,7 @@ async function calculateCUsdPrices(
     exchangeRateManager.calculatecUSDPrices(),
     fetchPricesOrEmpty(
       tokenAddresses,
-      Chain.Celo,
+      BlockscoutChain.Celo,
       exchangeRateManager.cUSDTokenAddress,
     ),
   ])
