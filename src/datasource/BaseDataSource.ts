@@ -6,7 +6,9 @@ import {
   Transaction,
 } from '../types'
 import { ClassifiedTransaction } from '../transaction/TransactionClassifier'
-import { TransactionType } from '../transaction/TransactionType'
+import { TransactionType, isDefined } from '../transaction/TransactionType'
+import { logger } from '../logger'
+import { fetchFromFirebase } from '../firebase'
 
 /**
  * Base class from which to build datasources for blockchain transaction data.
@@ -38,8 +40,36 @@ export abstract class BaseDataSource<
       address,
       afterCursor,
     )
-    const classifiedTxs = this.classifyTxs(address, transactions, valoraVersion)
-    const serializedTxs = this.serializeTxs(classifiedTxs)
+
+    // TODO: remove fetching the app version from Firebase in a few months from now (2023/01/06)
+    // once the majority of users have updated to a version that includes this info in the User-Agent
+    let appVersion = valoraVersion
+    if (!appVersion) {
+      const userInfo = await fetchFromFirebase(
+        `registrations/${address.toLowerCase()}`,
+      )
+      appVersion = userInfo?.appVersion
+    }
+
+    const classifiedTxs = this.classifyTxs(address, transactions, appVersion)
+
+    const serializedTxs: TokenTransactionV2[] = (
+      await Promise.all(
+        classifiedTxs.map(async ({ transaction, transactionType }) => {
+          try {
+            return await transactionType.getEvent(transaction)
+          } catch (err) {
+            logger.warn({
+              type: 'ERROR_MAPPING_TO_EVENT_V2',
+              transaction: JSON.stringify(transaction),
+              err,
+            })
+          }
+        }),
+      )
+    )
+      .filter(isDefined)
+      .sort((a, b) => b.timestamp - a.timestamp)
     return {
       transactions: serializedTxs,
       pageInfo,
@@ -67,11 +97,4 @@ export abstract class BaseDataSource<
     txs: T[],
     valoraVersion?: string,
   ): ClassifiedTransaction<T, S>[]
-
-  /**
-   * Serialize transactions into the form expected by the GraphQL contract.
-   */
-  abstract serializeTxs(
-    classifiedTxs: ClassifiedTransaction<T, S>[],
-  ): TokenTransactionV2[]
 }

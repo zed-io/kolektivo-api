@@ -7,7 +7,7 @@ import {
   AssetTransfersWithMetadataResult,
   Network,
 } from 'alchemy-sdk'
-import { PageInfo, Chain, AlchemyChain, TokenTransactionV2 } from '../../types'
+import { PageInfo, Chain, AlchemyChain } from '../../types'
 import {
   ClassifiedTransaction,
   TransactionClassifier,
@@ -319,11 +319,5 @@ export class AlchemyDataSource extends BaseDataSource<
     }
 
     return classifiedTxs
-  }
-
-  serializeTxs(
-    _classifiedTxs: ClassifiedAlchemyTransaction[],
-  ): TokenTransactionV2[] {
-    throw new Error('serializeTxs not implemented!')
   }
 }
