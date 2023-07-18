@@ -325,7 +325,20 @@ export const mockTokenSentTx = new AlchemyTransaction({
 })
 
 export const mockTokenSwapTx = new AlchemyTransaction({
-  transfersFrom: [{ ...mockErc20TransferFrom, uniqueId: 'id-from' }],
-  transfersTo: [{ ...mockErc20TransferTo, uniqueId: 'id-to' }],
+  transfersFrom: [
+    { ...mockErc20TransferFrom, uniqueId: 'id-from', value: 0.4 },
+  ],
+  transfersTo: [
+    {
+      ...mockErc20TransferTo,
+      uniqueId: 'id-to',
+      value: 0.5,
+      rawContract: {
+        value: '0x03d72cfb0c8ef856',
+        address: '0x178e141a0e3b34152f73ff610437a7bf9b83267b',
+        decimal: '0x12',
+      },
+    },
+  ],
   txReceipt: mockTxReceipt,
 })
