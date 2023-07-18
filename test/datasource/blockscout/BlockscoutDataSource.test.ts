@@ -67,6 +67,10 @@ jest.mock('../../../src/helpers/TokenInfoCache.ts', () => ({
 describe('BlockscoutDataSource', () => {
   const datasource = new BlockscoutDataSource()
 
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   describe('fetchRawTxs', () => {
     it('fetches transactions from blockscout graphql', async () => {
       const result = await datasource.fetchRawTxs('0xABCD')

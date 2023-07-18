@@ -41,7 +41,7 @@ export const resolvers = {
             .getDataSource(chain)
             .getTokenTxs(args.address, args.afterCursor, valoraVersion)
         } else if (chain === BlockscoutChain.Celo) {
-          return await dataSources.blockscoutAPI.getTokenTransactionsV2(
+          return await dataSources.blockscout.getTokenTxs(
             args.address,
             args.afterCursor,
             valoraVersion,
@@ -70,7 +70,7 @@ export const resolvers = {
       context.localCurrencyCode = args.localCurrencyCode
       try {
         const transactions =
-          await dataSources.blockscoutAPI.getTokenTransactions(
+          await dataSources.legacyBlockscoutAPI.getTokenTransactions(
             args,
             context.dataSources.currencyConversionAPI,
           )

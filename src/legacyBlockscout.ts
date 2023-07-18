@@ -3,24 +3,8 @@ import { performance } from 'perf_hooks'
 import { BLOCKSCOUT_API, FAUCET_ADDRESS } from './config'
 import { CGLD, CUSD } from './currencyConversion/consts'
 import CurrencyConversionAPI from './currencyConversion/CurrencyConversionAPI'
-import {
-  Any,
-  ContractCall,
-  EscrowReceived,
-  EscrowSent,
-  ExchangeCeloToToken,
-  ExchangeTokenToCelo,
-  TokenReceived,
-  TokenSent,
-} from './events/blockscout'
-import { EscrowContractCall } from './events/blockscout/EscrowContractCall'
-import { ExchangeContractCall } from './events/blockscout/ExchangeContractCall'
-import { NftReceived } from './events/blockscout/NftReceived'
-import { NftSent } from './events/blockscout/NftSent'
-import { SwapTransaction } from './events/blockscout/SwapTransaction'
 import { Input } from './helpers/Input'
 import { InputDecoderLegacy } from './helpers/InputDecoderLegacy'
-import tokenInfoCache from './helpers/TokenInfoCache'
 import {
   LegacyAny,
   LegacyContractCall,
@@ -44,230 +28,20 @@ import { LegacyTransfersNavigator } from './legacyTransaction/LegacyTransfersNav
 import { logger } from './logger'
 import { metrics } from './metrics'
 import { BlockscoutTransaction } from './transaction/blockscout/BlockscoutTransaction'
-import { BlockscoutTransactionAggregator } from './transaction/blockscout/BlockscoutTransactionAggregator'
-import { TransactionClassifier } from './transaction/TransactionClassifier'
 import { ContractAddresses, getContractAddresses } from './utils'
-import { fetchFromFirebase } from './firebase'
-import { compare } from 'compare-versions'
-import { isDefined } from './transaction/TransactionType'
-import {
-  PageInfo,
-  MoneyAmount,
-  TokenTransactionArgs,
-  BlockscoutTokenTransfer,
-  TokenTransactionResult,
-  TokenTransactionV2,
-  BlockscoutChain,
-} from './types'
-import { BlockscoutTransactionType } from './transaction/blockscout/BlockscoutTransactionType'
+import { PageInfo, MoneyAmount, TokenTransactionArgs } from './types'
 
 export interface TransactionsBatch {
   transactions: BlockscoutTransaction[]
   pageInfo: PageInfo
 }
 
-const MAX_RESULTS_PER_QUERY = 25
-const MAX_TRANSFERS_PER_TRANSACTIONS = 40
-
-const BLOCKSCOUT_QUERY = `
-query Transfers($address: AddressHash!, $afterCursor: String) {
-  # TXs related to cUSD or cGLD transfers
-  tokenTransferTxs(addressHash: $address, first: ${MAX_RESULTS_PER_QUERY}, after: $afterCursor) {
-    edges {
-      node {
-        transactionHash
-        blockNumber
-        timestamp
-        gasPrice
-        gasUsed
-        feeToken
-        gatewayFee
-        gatewayFeeRecipient
-        input
-        # Transfers associated with the TX
-        tokenTransfer(first: ${MAX_TRANSFERS_PER_TRANSACTIONS}) {
-          edges {
-            node {
-              fromAddressHash
-              toAddressHash
-              fromAccountHash
-              toAccountHash
-              value
-              tokenAddress
-              tokenType
-              tokenId
-            }
-          }
-        }
-      }
-    }
-    pageInfo {
-      startCursor
-      endCursor
-      hasNextPage
-      hasPreviousPage
-    }
-  }
-}
-`
-export class BlockscoutAPI extends RESTDataSource {
+export class LegacyBlockscoutAPI extends RESTDataSource {
   contractAddresses: ContractAddresses | undefined
 
   constructor() {
     super()
     this.baseURL = `${BLOCKSCOUT_API}/graphql`
-  }
-
-  async getTokenTransactionsV2(
-    address: string,
-    afterCursor?: string,
-    valoraVersion?: string,
-  ): Promise<TokenTransactionResult> {
-    const userAddress = address.toLowerCase()
-
-    // For now, when you create a new transaction type other than TokenTransferV2, TokenExchangeV2
-    // You should do version check to take care of backward compatibility with wallet client.
-
-    let shouldIncludeNftTransactions = false
-    let shouldIncludeSwapTransactions = false
-    if (userAddress != null) {
-      let appVersion = valoraVersion
-      // TODO: remove fetching the app version from Firebase in a few months from now (2023/01/06)
-      // once the majority of users have updated to a version that includes this info in the User-Agent
-      if (!appVersion) {
-        const userInfo = await fetchFromFirebase(`registrations/${userAddress}`)
-        appVersion = userInfo?.appVersion
-      }
-
-      shouldIncludeNftTransactions = compare(
-        appVersion ?? '0.0.0',
-        '1.38.0',
-        '>=',
-      )
-      shouldIncludeSwapTransactions = compare(
-        appVersion ?? '0.0.0',
-        '1.39.0',
-        '>=',
-      )
-    }
-
-    const transactionBatch = await this.getRawTokenTransactionsV2(
-      userAddress,
-      shouldIncludeNftTransactions,
-      afterCursor,
-    )
-
-    const context = { userAddress, chain: BlockscoutChain.Celo }
-
-    // Order is important when classifying transactions.
-    // Think that below is like case statement.
-    const transactionClassifier = new TransactionClassifier<
-      BlockscoutTransaction,
-      BlockscoutTransactionType
-    >(
-      [
-        new ExchangeContractCall(context),
-        new EscrowContractCall(context),
-        new ContractCall(context),
-        new EscrowSent(context),
-        shouldIncludeNftTransactions ? new NftReceived(context) : undefined,
-        shouldIncludeNftTransactions ? new NftSent(context) : undefined,
-        new TokenSent(context),
-        new EscrowReceived(context),
-        new TokenReceived(context),
-        shouldIncludeSwapTransactions
-          ? new SwapTransaction(context)
-          : undefined,
-        new ExchangeCeloToToken(context),
-        new ExchangeTokenToCelo(context),
-        new Any(context),
-      ].filter(isDefined),
-    )
-
-    const classifiedTransactions = transactionBatch.transactions.map(
-      (transaction) => transactionClassifier.classify(transaction),
-    )
-
-    const aggregatedTransactions = BlockscoutTransactionAggregator.aggregate(
-      classifiedTransactions,
-    )
-
-    const events: TokenTransactionV2[] = (
-      await Promise.all(
-        aggregatedTransactions.map(async ({ transaction, transactionType }) => {
-          try {
-            return await transactionType.getEvent(transaction)
-          } catch (err) {
-            logger.warn({
-              type: 'ERROR_MAPPING_TO_EVENT_V2',
-              transaction: JSON.stringify(transaction),
-              err,
-            })
-          }
-        }),
-      )
-    )
-      .filter(isDefined)
-      .sort((a, b) => b.timestamp - a.timestamp)
-
-    logger.info({
-      type: 'GET_TOKEN_TRANSACTIONS_V2',
-      address: address,
-      rawTransactionCount: transactionBatch.transactions.length,
-      pageInfo: transactionBatch.pageInfo,
-      eventCount: events.length,
-    })
-
-    return {
-      transactions: events,
-      pageInfo: transactionBatch.pageInfo,
-    }
-  }
-
-  async getRawTokenTransactionsV2(
-    address: string,
-    shouldIncludeNftTransactions: boolean,
-    afterCursor?: string,
-  ): Promise<TransactionsBatch> {
-    const t0 = performance.now()
-
-    await this.ensureContractAddresses()
-
-    const response = await this.post('', {
-      query: BLOCKSCOUT_QUERY,
-      variables: { address, afterCursor },
-    })
-
-    const pageInfo = response.data.tokenTransferTxs.pageInfo
-
-    const transactions = response.data.tokenTransferTxs.edges.map(
-      ({ node }: any) => {
-        const { tokenTransfer, ...partialTransferTx } = node
-        const tokenTransfers = node.tokenTransfer.edges.map(
-          (edge: any) => edge.node,
-        )
-
-        return new BlockscoutTransaction(partialTransferTx, tokenTransfers)
-      },
-    )
-
-    const supportedTokens = new Set(tokenInfoCache.getTokenAddresses())
-
-    const filteredUnknownTokens = transactions.filter(
-      (tx: BlockscoutTransaction) => {
-        return tx.transfers.every((transfer: BlockscoutTokenTransfer) => {
-          return (
-            supportedTokens.has(transfer.tokenAddress.toLowerCase()) ||
-            (shouldIncludeNftTransactions && transfer.tokenType === 'ERC-721')
-          )
-        })
-      },
-    )
-
-    // Record time at end of execution
-    const t1 = performance.now()
-    metrics.setRawTokenDuration(t1 - t0)
-    return { transactions: filteredUnknownTokens, pageInfo }
   }
 
   async getRawTokenTransactions(address: string): Promise<LegacyTransaction[]> {

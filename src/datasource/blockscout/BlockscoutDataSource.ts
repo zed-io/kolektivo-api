@@ -1,3 +1,4 @@
+import { performance } from 'perf_hooks'
 import { BaseDataSource } from '../BaseDataSource'
 import { BlockscoutTransaction } from '../../transaction/blockscout/BlockscoutTransaction'
 import { BlockscoutTransactionType } from '../../transaction/blockscout/BlockscoutTransactionType'
@@ -26,6 +27,8 @@ import { ExchangeContractCall } from '../../events/blockscout/ExchangeContractCa
 import { SwapTransaction } from '../../events/blockscout/SwapTransaction'
 import { isDefined } from '../../transaction/TransactionType'
 import { BlockscoutTransactionAggregator } from '../../transaction/blockscout/BlockscoutTransactionAggregator'
+import { getContractAddresses } from '../../utils'
+import { metrics } from '../../metrics'
 
 const MAX_RESULTS_PER_QUERY = 25
 const MAX_TRANSFERS_PER_TRANSACTIONS = 40
@@ -85,6 +88,11 @@ export class BlockscoutDataSource extends BaseDataSource<
     address: string,
     afterCursor?: string | undefined,
   ): Promise<{ transactions: BlockscoutTransaction[]; pageInfo: PageInfo }> {
+    // ensure contract addresses are loaded from contract kit
+    const t0 = performance.now()
+
+    await getContractAddresses()
+
     const response = await this.post('', {
       query: BLOCKSCOUT_QUERY,
       variables: { address: address.toLowerCase(), afterCursor },
@@ -102,6 +110,10 @@ export class BlockscoutDataSource extends BaseDataSource<
         return new BlockscoutTransaction(partialTransferTx, tokenTransfers)
       },
     )
+
+    // Record time at end of execution
+    const t1 = performance.now()
+    metrics.setRawTokenDuration(t1 - t0)
 
     return { transactions, pageInfo }
   }

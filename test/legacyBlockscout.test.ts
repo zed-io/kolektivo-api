@@ -1,4 +1,4 @@
-import { BlockscoutAPI } from '../src/blockscout'
+import { LegacyBlockscoutAPI } from '../src/legacyBlockscout'
 import CurrencyConversionAPI from '../src/currencyConversion/CurrencyConversionAPI'
 import mockTokenTxs from './mockTokenTxs'
 
@@ -67,11 +67,11 @@ const mockCurrencyConversionAPI: CurrencyConversionAPI = {
   getFromMoneyAmount: jest.fn(),
 }
 
-describe('Blockscout', () => {
-  let blockscoutAPI: BlockscoutAPI
+describe('LegacyBlockscout', () => {
+  let blockscoutAPI: LegacyBlockscoutAPI
 
   beforeEach(() => {
-    blockscoutAPI = new BlockscoutAPI()
+    blockscoutAPI = new LegacyBlockscoutAPI()
     mockDataSourcePost.mockClear()
   })
 

@@ -29,8 +29,8 @@ describe('resolvers', () => {
         valoraVersion: '1.0.0',
         localCurrencyCode: 'USD',
         dataSources: {
-          blockscoutAPI: {
-            getTokenTransactionsV2: jest.fn().mockResolvedValue('celo'),
+          blockscout: {
+            getTokenTxs: jest.fn().mockResolvedValue('celo'),
           },
           alchemyDataSourceManager: {
             getDataSource: jest
@@ -55,12 +55,10 @@ describe('resolvers', () => {
         context,
       )
       expect(result).toEqual('celo')
-      expect(
-        context.dataSources.blockscoutAPI.getTokenTransactionsV2,
-      ).toHaveBeenCalledTimes(1)
-      expect(
-        context.dataSources.blockscoutAPI.getTokenTransactionsV2,
-      ).toHaveBeenCalledWith(
+      expect(context.dataSources.blockscout.getTokenTxs).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(context.dataSources.blockscout.getTokenTxs).toHaveBeenCalledWith(
         args.address,
         args.afterCursor,
         context.valoraVersion,
@@ -74,12 +72,10 @@ describe('resolvers', () => {
         context,
       )
       expect(result).toEqual('celo')
-      expect(
-        context.dataSources.blockscoutAPI.getTokenTransactionsV2,
-      ).toHaveBeenCalledTimes(1)
-      expect(
-        context.dataSources.blockscoutAPI.getTokenTransactionsV2,
-      ).toHaveBeenCalledWith(
+      expect(context.dataSources.blockscout.getTokenTxs).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(context.dataSources.blockscout.getTokenTxs).toHaveBeenCalledWith(
         args.address,
         args.afterCursor,
         context.valoraVersion,

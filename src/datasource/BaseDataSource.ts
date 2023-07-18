@@ -70,6 +70,15 @@ export abstract class BaseDataSource<
     )
       .filter(isDefined)
       .sort((a, b) => b.timestamp - a.timestamp)
+
+    logger.info({
+      type: 'GET_TOKEN_TRANSACTIONS_V2',
+      address: address,
+      rawTransactionCount: transactions.length,
+      pageInfo,
+      eventCount: serializedTxs.length,
+    })
+
     return {
       transactions: serializedTxs,
       pageInfo,
