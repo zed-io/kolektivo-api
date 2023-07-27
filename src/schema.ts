@@ -185,7 +185,7 @@ export default `type ExchangeRate {
   type NftMetadata {
     id: Decimal
     name: String!
-    description: String!
+    description: String
     image: String!
     dna: String
     date: Timestamp
