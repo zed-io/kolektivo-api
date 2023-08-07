@@ -91,6 +91,7 @@ export interface Nft {
     name: string
     description: string
     image: string
+    animation_url?: string
     dna?: string
     id?: number
     date?: number

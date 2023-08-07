@@ -187,6 +187,7 @@ export default `type ExchangeRate {
     name: String!
     description: String
     image: String!
+    animation_url: String
     dna: String
     date: Timestamp
     attributes: [NftAttributes]
